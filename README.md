@@ -7,7 +7,7 @@
 $ git clone https://github.com/sthanhng/yoloface
 ```
 
-* For body detection run the following command:
+* For body detection run the following command (change the IMG_PATH/VIDEO_PATH):
 
 >**image input**
 ```bash
