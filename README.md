@@ -7,6 +7,13 @@
 $ git clone https://github.com/sthanhng/yoloface
 ```
 
+* Download the weights files:
+>** yolov3-tiny weights**
+>https://drive.google.com/file/d/1_XixOaRpi26B-3ykxQBBwp02Uk5CZ5O7/view?usp=sharing
+
+>** yolov3-face weights**
+>https://drive.google.com/file/d/1YFOxAtOH6Xa-1VuIJIdRsWAZxsj6rhuO/view?usp=sharing
+
 * For body detection run the following command (change the IMG_PATH/VIDEO_PATH):
 
 >**image input**
