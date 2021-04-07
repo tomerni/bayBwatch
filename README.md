@@ -23,7 +23,7 @@ $ pip install -r requirements.txt
 
 * Run the function _main():
 ```bash
-def _main(model_cfg: str, model_weights: str, output_dir: str, image="", video="", src=0):
+def _main(model_cfg: str, model_weights: str, output_dir: str, image="", video="", src=None):
 ```
 * Supply the relevant config and weights (See CLI usage for more information about the detection types).
 * Must supply image path/video path/src=1(webcam)
@@ -45,7 +45,7 @@ $ python yoloface.py --model-cfg "./cfg/yolov3-tiny.cfg" --model-weights "./mode
 
 >**webcam**
 ```bash
-$ python yoloface.py --model-cfg "./cfg/yolov3-tiny.cfg" --model-weights "./model-weights/yolov3-tiny.weights" --src 1 --output-dir outputs/
+$ python yoloface.py --model-cfg "./cfg/yolov3-tiny.cfg" --model-weights "./model-weights/yolov3-tiny.weights" --src 0 --output-dir outputs/
 ```
 
 * For face detection run the following command:
@@ -63,12 +63,12 @@ $ python yoloface.py --model-cfg "./cfg/yolov3-face.cfg" --model-weights "./mode
 
 >**webcam**
 ```bash
-$ python yoloface.py --model-cfg "./cfg/yolov3-face.cfg" --model-weights "./model-weights/yolov3-wider_16000.weights" --src 1 --output-dir outputs/
+$ python yoloface.py --model-cfg "./cfg/yolov3-face.cfg" --model-weights "./model-weights/yolov3-wider_16000.weights" --src 0 --output-dir outputs/
 ```
 
 ### Flags explanation
 * --model-cfg - yolov3 config path
 * --model-weights - yolov3 weights path
 * --image/video - image/video path
-* --src - 1 for webcam
+* --src - 0 for webcam
 * --output-dir - the output's path
