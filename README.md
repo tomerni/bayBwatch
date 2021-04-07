@@ -14,6 +14,22 @@ $ git clone https://github.com/sthanhng/yoloface
 >** yolov3-face weights**
 >https://drive.google.com/file/d/1YFOxAtOH6Xa-1VuIJIdRsWAZxsj6rhuO/view?usp=sharing
 
+* Install requirements:
+ ```bash
+$ pip install -r requirements.txt
+```
+
+### API usage:
+
+* Run the function _main():
+```bash
+def _main(model_cfg: str, model_weights: str, output_dir: str, image="", video="", src=0):
+```
+* Supply the relevant config and weights (See CLI usage for more information about the detection types).
+* Must supply image path/video path/src=1(webcam)
+
+### CLI usage:
+
 * For body detection run the following command (change the IMG_PATH/VIDEO_PATH):
 
 >**image input**
@@ -50,7 +66,7 @@ $ python yoloface.py --model-cfg "./cfg/yolov3-face.cfg" --model-weights "./mode
 $ python yoloface.py --model-cfg "./cfg/yolov3-face.cfg" --model-weights "./model-weights/yolov3-wider_16000.weights" --src 1 --output-dir outputs/
 ```
 
-## Flags explanation
+### Flags explanation
 * --model-cfg - yolov3 config path
 * --model-weights - yolov3 weights path
 * --image/video - image/video path
