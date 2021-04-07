@@ -21,7 +21,7 @@ $ pip install -r requirements.txt
 
 ### API usage:
 
-* Run the function _main():
+* Run the function _main() in yoloface_api.py:
 ```bash
 def _main(model_cfg: str, model_weights: str, output_dir: str, image="", video="", src=None):
 ```
