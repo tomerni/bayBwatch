@@ -48,8 +48,8 @@ def load_args_and_model(model_cfg: str, model_weights: str, output_dir: str):
     return net
 
 
-def _main(model_cfg: str, model_weights: str, output_dir: str, image="",
-          video="", src=0):
+def _main(model_cfg: str, model_weights: str, output_dir: str, image=None,
+          video=None, src=None):
     if not image and not video and not src:
         return False
     wind_name = 'Detection using YOLOv3'

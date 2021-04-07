@@ -120,8 +120,6 @@ def _main():
         faces = post_process(frame, outs, CONF_THRESHOLD, NMS_THRESHOLD)
         if len(faces) > 0:
             identify_flag = True
-        print('[i] ==> # detected faces: {}'.format(len(faces)))
-        print('#' * 60)
 
         # initialize the set of information we'll displaying on the frame
         info = [
