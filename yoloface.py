@@ -1,22 +1,14 @@
 # *******************************************************************
 #
 # Author : Thanh Nguyen, 2018
-# Email  : sthanhng@gmail.com
-# Github : https://github.com/sthanhng
-#
-# BAP, AI Team
-# Face detection using the YOLOv3 algorithm
-#
+# Editor: Tomer Nissim, 2021
+# Email  : tomernissim@gmail.com
+# Github : https://github/tomerni
+
 # Description : yoloface.py
 # The main code of the Face detection using the YOLOv3 algorithm
 #
 # *******************************************************************
-
-# Usage example:  python yoloface.py --image samples/outside_000001.jpg \
-#                                    --output-dir outputs/
-#                 python yoloface.py --video samples/subway.mp4 \
-#                                    --output-dir outputs/
-#                 python yoloface.py --src 1 --output-dir outputs/
 
 
 import argparse
