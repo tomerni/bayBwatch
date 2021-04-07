@@ -4,7 +4,7 @@
 
 * Clone this repository
 ```bash
-$ git clone https://github.com/sthanhng/yoloface
+$ git clone https://github.com/tomerni/bayBwatch
 ```
 
 * Download the weights files:
