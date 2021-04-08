@@ -49,9 +49,19 @@ def get_outputs_names(net):
 
 
 # Draw the predicted bounding box
-def draw_predict(frame, conf, left, top, right, bottom):
+def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_list,
+                 bodies_list):
     # Draw a bounding box.
     cv2.rectangle(frame, (left, top), (right, bottom), COLOR_YELLOW, 2)
+
+    if head_body_flag:
+        faces_list.append
+        print("size of head: {:.2f}".format(bottom - top))
+        print("head coordinates: ({}, {}), ({},{})".format(left,top,right,bottom))
+    else:
+        print("size of body: {:.2f}".format(bottom - top))
+        print("body coordinates: ({}, {}), ({},{})".format(left, top, right,
+                                                           bottom))
 
     text = '{:.2f}'.format(conf)
 
@@ -63,9 +73,12 @@ def draw_predict(frame, conf, left, top, right, bottom):
                 COLOR_WHITE, 1)
 
 
-def post_process(frame, outs, conf_threshold, nms_threshold):
+def post_process(frame, outs, conf_threshold, nms_threshold, head_body_flag):
     frame_height = frame.shape[0]
     frame_width = frame.shape[1]
+
+    faces_list = list()
+    bodies_list = list()
 
     # Scan through all the bounding boxes output from the network and keep only
     # the ones with high confidence scores. Assign the box's class label as the
@@ -106,7 +119,7 @@ def post_process(frame, outs, conf_threshold, nms_threshold):
         left, top, right, bottom = refined_box(left, top, width, height)
         # draw_predict(frame, confidences[i], left, top, left + width,
         #              top + height)
-        draw_predict(frame, confidences[i], left, top, right, bottom)
+        draw_predict(frame, confidences[i], left, top, right, bottom, head_body_flag)
     return final_boxes
 
 
@@ -138,6 +151,7 @@ class FPS:
     def fps(self):
         # compute the (approximate) frames per second
         return self._num_frames / self.elapsed()
+
 
 def refined_box(left, top, width, height):
     right = left + width

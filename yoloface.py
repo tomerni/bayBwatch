@@ -29,6 +29,10 @@ from utils import *
 # print('[i] Path to video file: ', args.video)
 # print('###########################################################\n')
 
+FULL_CFG_PATH = "./cfg/yolov3-spp.cfg"
+FULL_WEIGHTS_PATH = "./model-weights/yolov3-spp.weights"
+
+
 def load_args_and_model():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-cfg', type=str,
@@ -57,17 +61,21 @@ def load_args_and_model():
 
     # Give the configuration and weight files for the model and load the network
     # using them.
-    net = cv2.dnn.readNetFromDarknet(args.model_cfg, args.model_weights)
-    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+    face_net = cv2.dnn.readNetFromDarknet(args.model_cfg, args.model_weights)
+    face_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    face_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-    return net, args
+    body_net = cv2.dnn.readNetFromDarknet(FULL_CFG_PATH, FULL_WEIGHTS_PATH)
+    body_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    body_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+
+    return face_net, body_net, args
 
 
 def _main():
     wind_name = 'face detection using YOLOv3'
     cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
-    net, args = load_args_and_model()
+    face_net, body_net, args = load_args_and_model()
     output_file = ''
     identify_flag = False
 
@@ -111,25 +119,28 @@ def _main():
                                      [0, 0, 0], 1, crop=False)
 
         # Sets the input to the network
-        net.setInput(blob)
+        face_net.setInput(blob)
+        body_net.setInput(blob)
 
         # Runs the forward pass to get output of the output layers
-        outs = net.forward(get_outputs_names(net))
+        face_outs = face_net.forward(get_outputs_names(face_net))
+        body_outs = body_net.forward(get_outputs_names(body_net))
 
         # Remove the bounding boxes with low confidence
-        faces = post_process(frame, outs, CONF_THRESHOLD, NMS_THRESHOLD)
-        if len(faces) > 0:
+        faces = post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD, True)
+        bodies = post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD, False)
+        if len(faces) > 0 and len(bodies) > 0:
             identify_flag = True
 
         # initialize the set of information we'll displaying on the frame
-        info = [
-            ('number of faces detected', '{}'.format(len(faces)))
-        ]
-
-        for (i, (txt, val)) in enumerate(info):
-            text = '{}: {}'.format(txt, val)
-            cv2.putText(frame, text, (10, (i * 20) + 20),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, COLOR_RED, 2)
+        # info = [
+        #     ('number of faces detected', '{}'.format(len(faces)))
+        # ]
+        #
+        # for (i, (txt, val)) in enumerate(info):
+        #     text = '{}: {}'.format(txt, val)
+        #     cv2.putText(frame, text, (10, (i * 20) + 20),
+        #                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, COLOR_RED, 2)
 
         # Save the output video to file
         if args.image:

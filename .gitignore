@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 /model-weights/yolov3-tiny.weights
 /model-weights/yolov3-wider_16000.weights
+/model-weights/yolov3-spp.weights
