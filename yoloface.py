@@ -14,24 +14,25 @@
 import argparse
 import sys
 import os
+import time
 
-from utils import *
-
-#####################################################################
-
+from yolo_utils import *
 
 #####################################################################
-# print the arguments
-# print('----- info -----')
-# print('[i] The config file: ', args.model_cfg)
-# print('[i] The weights of model file: ', args.model_weights)
-# print('[i] Path to image file: ', args.image)
-# print('[i] Path to video file: ', args.video)
-# print('###########################################################\n')
+
 
 FULL_CFG_PATH = "./cfg/yolov3-spp.cfg"
 FULL_WEIGHTS_PATH = "./model-weights/yolov3-spp.weights"
+ADULT_CHILD_RATIO = 5.5
 
+
+# TODO:
+#  create hot zones and manage them
+#  merge the changes in the api file
+#  counter for frames in which child in hot zone - it takes about
+#  15 seconds to analyze 10 frames so if a child is in the hot zone for enough
+#  time we will be able to detect him
+#  need to figure out how to integrate with HELI
 
 def load_args_and_model():
     parser = argparse.ArgumentParser()
@@ -72,45 +73,79 @@ def load_args_and_model():
     return face_net, body_net, args
 
 
-def _main():
-    wind_name = 'face detection using YOLOv3'
-    cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
-    face_net, body_net, args = load_args_and_model()
-    output_file = ''
-    identify_flag = False
-
+def get_cap_and_output(args):
     if args.image:
         if not os.path.isfile(args.image):
-            print("[!] ==> Input image file {} doesn't exist".format(args.image))
+            print(
+                "[!] ==> Input image file {} doesn't exist".format(args.image))
             sys.exit(1)
         cap = cv2.VideoCapture(args.image)
         output_file = args.image[:-4].rsplit('/')[-1] + '_yoloface.jpg'
     elif args.video:
         if not os.path.isfile(args.video):
-            print("[!] ==> Input video file {} doesn't exist".format(args.video))
+            print(
+                "[!] ==> Input video file {} doesn't exist".format(args.video))
             sys.exit(1)
         cap = cv2.VideoCapture(args.video)
         output_file = args.video[:-4].rsplit('/')[-1] + '_yoloface.avi'
     else:
         # Get data from the camera
         cap = cv2.VideoCapture(args.src)
+        output_file = ''
+
+    return cap, output_file
+
+
+def analyze_objects_in_frame(faces_list, bodies_list):
+    adult_in_frame_counter, child_in_frame_counter = 0, 0
+    identify_flag, alarm_flag = False, False
+    # any match
+    if len(faces_list) > 0 and len(bodies_list) > 0:
+        identify_flag = True
+    # incompatible number of heads and bodies
+    if len(faces_list) != len(bodies_list):
+        print("Balagan")
+        # continue
+    else:
+        for i in range(len(faces_list)):
+            ratio = (bodies_list[i][0] + faces_list[i][0]) / faces_list[i][0]
+            if ratio <= ADULT_CHILD_RATIO:
+                child_in_frame_counter += 1
+            else:
+                adult_in_frame_counter += 1
+            print("Body Head Ratio: {}".format(ratio))
+    if child_in_frame_counter >= 1 and adult_in_frame_counter == 0:
+        alarm_flag = True
+    return identify_flag, alarm_flag
+
+
+def _main():
+    wind_name = 'face detection using YOLOv3'
+    cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
+    face_net, body_net, args = load_args_and_model()
+    cap, output_file = get_cap_and_output(args)
+    child_in_zone = 0
 
     # Get the video writer initialized to save the output video
     if not args.image:
-        video_writer = cv2.VideoWriter(os.path.join(args.output_dir, output_file),
-                                       cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'),
-                                       cap.get(cv2.CAP_PROP_FPS), (
-                                           round(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-                                           round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
+        video_writer = cv2.VideoWriter(
+            os.path.join(args.output_dir, output_file),
+            cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'),
+            cap.get(cv2.CAP_PROP_FPS), (
+                round(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+                round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))
 
     while True:
-
+        start = time.time()
         has_frame, frame = cap.read()
+        faces_list, bodies_list = list(), list()
+        hot_zones_list = [HotZone(100, 100, 200, 200, 2)]
 
         # Stop the program if reached end of video
         if not has_frame:
             print('[i] ==> Done processing!!!')
-            print('[i] ==> Output file is stored at', os.path.join(args.output_dir, output_file))
+            print('[i] ==> Output file is stored at',
+                  os.path.join(args.output_dir, output_file))
             cv2.waitKey(1000)
             break
 
@@ -128,39 +163,30 @@ def _main():
 
         # Remove the bounding boxes with low confidence and returns lists
         # with the bodies and faces in the frame
-        faces_list = list()
-        bodies_list = list()
-        faces = post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD,
-                             True, faces_list, bodies_list)
-        bodies = post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
-                              False, faces_list, bodies_list)
+        post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD,
+                     True, faces_list, bodies_list, hot_zones_list)
+        post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
+                     False, faces_list, bodies_list, hot_zones_list)
 
         # sort the faces and bodies to find matches
         faces_list.sort(key=lambda x: x[1])
-        bodies_list.sort(key=lambda x: x[1])
-        print(faces_list)
-        print(bodies_list)
+        bodies_list.sort(key=lambda x: x[1][0])
 
-        # any match
-        if len(faces) > 0 and len(bodies) > 0:
-            identify_flag = True
-        # incompatible number of heads and bodies
-        if len(faces_list) != len(bodies_list):
-            print("Balagan")
+        identify_flag, alarm_flag = analyze_objects_in_frame(faces_list,
+                                                             bodies_list)
 
-        # initialize the set of information we'll displaying on the frame
-        # info = [
-        #     ('number of faces detected', '{}'.format(len(faces)))
-        # ]
-        #
-        # for (i, (txt, val)) in enumerate(info):
-        #     text = '{}: {}'.format(txt, val)
-        #     cv2.putText(frame, text, (10, (i * 20) + 20),
-        #                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, COLOR_RED, 2)
+        if not alarm_flag:
+            child_in_zone = 0
+        elif child_in_zone == 9:
+            print("ALARMMMMMM")  # NEED TO BE HELI
+            child_in_zone = 0
+        else:
+            child_in_zone += 1
 
         # Save the output video to file
         if args.image:
-            cv2.imwrite(os.path.join(args.output_dir, output_file), frame.astype(np.uint8))
+            cv2.imwrite(os.path.join(args.output_dir, output_file),
+                        frame.astype(np.uint8))
         else:
             video_writer.write(frame.astype(np.uint8))
 
@@ -170,14 +196,14 @@ def _main():
         if key == 27 or key == ord('q'):
             print('[i] ==> Interrupted by user!')
             break
+        end = time.time()
+        print("Time for round: {}".format(end - start))
 
     cap.release()
     cv2.destroyAllWindows()
 
     print('==> All done!')
     print('***********************************************************')
-
-    return identify_flag
 
 
 if __name__ == '__main__':
