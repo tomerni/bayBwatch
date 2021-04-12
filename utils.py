@@ -55,13 +55,10 @@ def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_li
     cv2.rectangle(frame, (left, top), (right, bottom), COLOR_YELLOW, 2)
 
     if head_body_flag:
-        faces_list.append
-        print("size of head: {:.2f}".format(bottom - top))
-        print("head coordinates: ({}, {}), ({},{})".format(left,top,right,bottom))
+        #TODO: use the lists of faces and bodies
+        faces_list.append((bottom - top, bottom))
     else:
-        print("size of body: {:.2f}".format(bottom - top))
-        print("body coordinates: ({}, {}), ({},{})".format(left, top, right,
-                                                           bottom))
+        bodies_list.append((bottom - top, top))
 
     text = '{:.2f}'.format(conf)
 
@@ -73,12 +70,11 @@ def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_li
                 COLOR_WHITE, 1)
 
 
-def post_process(frame, outs, conf_threshold, nms_threshold, head_body_flag):
+def post_process(frame, outs, conf_threshold, nms_threshold, head_body_flag,
+                 faces_list, bodies_list):
     frame_height = frame.shape[0]
     frame_width = frame.shape[1]
 
-    faces_list = list()
-    bodies_list = list()
 
     # Scan through all the bounding boxes output from the network and keep only
     # the ones with high confidence scores. Assign the box's class label as the
@@ -119,7 +115,8 @@ def post_process(frame, outs, conf_threshold, nms_threshold, head_body_flag):
         left, top, right, bottom = refined_box(left, top, width, height)
         # draw_predict(frame, confidences[i], left, top, left + width,
         #              top + height)
-        draw_predict(frame, confidences[i], left, top, right, bottom, head_body_flag)
+        draw_predict(frame, confidences[i], left, top, right, bottom,
+                     head_body_flag, faces_list, bodies_list)
     return final_boxes
 
 

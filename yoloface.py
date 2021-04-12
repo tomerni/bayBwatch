@@ -126,11 +126,27 @@ def _main():
         face_outs = face_net.forward(get_outputs_names(face_net))
         body_outs = body_net.forward(get_outputs_names(body_net))
 
-        # Remove the bounding boxes with low confidence
-        faces = post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD, True)
-        bodies = post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD, False)
+        # Remove the bounding boxes with low confidence and returns lists
+        # with the bodies and faces in the frame
+        faces_list = list()
+        bodies_list = list()
+        faces = post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD,
+                             True, faces_list, bodies_list)
+        bodies = post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
+                              False, faces_list, bodies_list)
+
+        # sort the faces and bodies to find matches
+        faces_list.sort(key=lambda x: x[1])
+        bodies_list.sort(key=lambda x: x[1])
+        print(faces_list)
+        print(bodies_list)
+
+        # any match
         if len(faces) > 0 and len(bodies) > 0:
             identify_flag = True
+        # incompatible number of heads and bodies
+        if len(faces_list) != len(bodies_list):
+            print("Balagan")
 
         # initialize the set of information we'll displaying on the frame
         # info = [
