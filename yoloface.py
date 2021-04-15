@@ -15,7 +15,7 @@ import argparse
 import sys
 import os
 import time
-
+from alarm import switch_alarm
 from yolo_utils import *
 
 #####################################################################
@@ -178,6 +178,7 @@ def _main():
         if not alarm_flag:
             child_in_zone = 0
         elif child_in_zone == 9:
+            switch_alarm()
             print("ALARMMMMMM")  # NEED TO BE HELI
             child_in_zone = 0
         else:
