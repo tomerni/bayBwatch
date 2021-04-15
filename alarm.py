@@ -3,7 +3,7 @@ from time import sleep
 import time
 
 
-def switch_alarm(self):
+def switch_alarm():
     """
     connects to the alarm and switches it to the state provided as an argument
     :return: True if completed successfully
