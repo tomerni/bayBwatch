@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6d3c183b-db1e-40cd-8ff5-bb90c6b5ede8" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/alarm.py" beforeDir="false" afterPath="$PROJECT_DIR$/alarm.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yoloface.py" beforeDir="false" afterPath="$PROJECT_DIR$/yoloface.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/live_streaming.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
