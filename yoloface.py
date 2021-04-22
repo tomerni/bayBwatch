@@ -21,9 +21,10 @@ from yolo_utils import *
 #####################################################################
 
 
-FULL_CFG_PATH = "./cfg/yolov3-spp.cfg"
-FULL_WEIGHTS_PATH = "./model-weights/yolov3-spp.weights"
+FULL_CFG_PATH = "./cfg/yolov3.cfg"
+FULL_WEIGHTS_PATH = "./model-weights/yolov3.weights"
 ADULT_CHILD_RATIO = 5.5
+HEAD_PERCENTAGE = 0.75
 
 
 # TODO:
@@ -108,7 +109,8 @@ def analyze_objects_in_frame(faces_list, bodies_list):
         # continue
     else:
         for i in range(len(faces_list)):
-            ratio = (bodies_list[i][0] + faces_list[i][0]) / faces_list[i][0]
+            ratio = (bodies_list[i][0] + HEAD_PERCENTAGE * faces_list[i][0]) / \
+                    faces_list[i][0]
             if ratio <= ADULT_CHILD_RATIO:
                 child_in_frame_counter += 1
             else:
