@@ -16,6 +16,7 @@
 import datetime
 import numpy as np
 import cv2
+import time
 
 # -------------------------------------------------------------------
 # Parameters
@@ -24,8 +25,8 @@ from hotzone import HotZone
 
 CONF_THRESHOLD = 0.5
 NMS_THRESHOLD = 0.4
-IMG_WIDTH = 416
-IMG_HEIGHT = 416
+IMG_WIDTH = 320
+IMG_HEIGHT = 320
 
 # Default colors
 COLOR_BLUE = (255, 0, 0)
@@ -53,6 +54,7 @@ def get_outputs_names(net):
 def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_list,
                  bodies_list):
     # Draw a bounding box.
+    draw_time_start = time.time()
     cv2.rectangle(frame, (left, top), (right, bottom), COLOR_YELLOW, 2)
 
     if head_body_flag:
@@ -68,6 +70,7 @@ def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_li
     top = max(top, label_size[1])
     cv2.putText(frame, text, (left, top - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.4,
                 COLOR_WHITE, 1)
+    print("draw time: {}".format(time.time() - draw_time_start))
 
 
 def check_inside_hot_zone(hot_zones_list: list, center_x, center_y):
@@ -91,6 +94,7 @@ def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
     :param hot_zones_list:
     :return:
     """
+    post_time = time.time()
     frame_height = frame.shape[0]
     frame_width = frame.shape[1]
     hot_zone_flag = False
@@ -123,11 +127,13 @@ def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
                 top = int(center_y - height / 2)
                 confidences.append(float(confidence))
                 boxes.append([left, top, width, height])
-
+    print("post time: {}".format(time.time() - post_time))
     # Perform non maximum suppression to eliminate redundant
     # overlapping boxes with lower confidences.
+    nms_time = time.time()
     indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold,
                                nms_threshold)
+    print("nms time: {}".format(time.time() - nms_time))
 
     for i in indices:
         i = i[0]
