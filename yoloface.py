@@ -73,6 +73,10 @@ def load_args_and_model():
     return face_net, body_net, args
 
 
+def child_in_hot_zone(x1, y1, x2, y2):
+    pass
+
+
 def get_cap_and_output(args):
     if args.image:
         if not os.path.isfile(args.image):
@@ -177,7 +181,9 @@ def _main():
 
         if not alarm_flag:
             child_in_zone = 0
-        elif child_in_zone == 9:
+            # TODO: need to receive coordinates of child in frame
+        elif (child_in_zone) and (child_in_hot_zone(1,1,0,0)) == 9:
+
             switch_alarm()
             print("ALARMMMMMM")  # NEED TO BE HELI
             child_in_zone = 0
