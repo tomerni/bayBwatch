@@ -21,9 +21,10 @@ from yolo_utils import *
 #####################################################################
 
 
-FULL_CFG_PATH = "./cfg/yolov3-spp.cfg"
-FULL_WEIGHTS_PATH = "./model-weights/yolov3-spp.weights"
+FULL_CFG_PATH = "./cfg/yolov3.cfg"
+FULL_WEIGHTS_PATH = "./model-weights/yolov3.weights"
 ADULT_CHILD_RATIO = 5.5
+HEAD_PERCENTAGE = 0.75
 
 
 # TODO:
@@ -62,6 +63,9 @@ def load_args_and_model():
 
     # Give the configuration and weight files for the model and load the network
     # using them.
+
+    net_load = time.time()
+
     face_net = cv2.dnn.readNetFromDarknet(args.model_cfg, args.model_weights)
     face_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     face_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
@@ -69,6 +73,8 @@ def load_args_and_model():
     body_net = cv2.dnn.readNetFromDarknet(FULL_CFG_PATH, FULL_WEIGHTS_PATH)
     body_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     body_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+
+    print("net loading time: {}".format(time.time() - net_load))
 
     return face_net, body_net, args
 
@@ -112,7 +118,8 @@ def analyze_objects_in_frame(faces_list, bodies_list):
         # continue
     else:
         for i in range(len(faces_list)):
-            ratio = (bodies_list[i][0] + faces_list[i][0]) / faces_list[i][0]
+            ratio = (bodies_list[i][0] + HEAD_PERCENTAGE * faces_list[i][0]) / \
+                    faces_list[i][0]
             if ratio <= ADULT_CHILD_RATIO:
                 child_in_frame_counter += 1
             else:
@@ -126,8 +133,12 @@ def analyze_objects_in_frame(faces_list, bodies_list):
 def _main():
     wind_name = 'face detection using YOLOv3'
     cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
+    load_time_start = time.time()
     face_net, body_net, args = load_args_and_model()
+    print("loading time: {}".format(time.time() - load_time_start))
+    cap_time_start = time.time()
     cap, output_file = get_cap_and_output(args)
+    print("cap time: {}".format(time.time() - cap_time_start))
     child_in_zone = 0
 
     # Get the video writer initialized to save the output video
@@ -162,17 +173,20 @@ def _main():
         body_net.setInput(blob)
 
         # Runs the forward pass to get output of the output layers
+        forward_time = time.time()
         face_outs = face_net.forward(get_outputs_names(face_net))
         body_outs = body_net.forward(get_outputs_names(body_net))
-
+        print("forwarding time: {}".format(time.time() - forward_time))
         # Remove the bounding boxes with low confidence and returns lists
         # with the bodies and faces in the frame
+        post_process_time = time.time()
         post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD,
                      True, faces_list, bodies_list, hot_zones_list)
         post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
                      False, faces_list, bodies_list, hot_zones_list)
+        print("post process time is: {}".format(post_process_time - time.time()));
 
-        # sort the faces and bodies to find matches
+    # sort the faces and bodies to find matches
         faces_list.sort(key=lambda x: x[1])
         bodies_list.sort(key=lambda x: x[1][0])
 
@@ -191,14 +205,17 @@ def _main():
             child_in_zone += 1
 
         # Save the output video to file
+        saving_time = time.time()
         if args.image:
             cv2.imwrite(os.path.join(args.output_dir, output_file),
                         frame.astype(np.uint8))
         else:
             video_writer.write(frame.astype(np.uint8))
+        print("saving time: {}".format(time.time() - saving_time))
 
+        show_time = time.time()
         cv2.imshow(wind_name, frame)
-
+        print("show time: {}".format(time.time() - saving_time))
         key = cv2.waitKey(1)
         if key == 27 or key == ord('q'):
             print('[i] ==> Interrupted by user!')

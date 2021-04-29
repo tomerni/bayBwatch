@@ -16,6 +16,7 @@
 import datetime
 import numpy as np
 import cv2
+import time
 
 # -------------------------------------------------------------------
 # Parameters
@@ -24,8 +25,8 @@ from hotzone import HotZone
 
 CONF_THRESHOLD = 0.5
 NMS_THRESHOLD = 0.4
-IMG_WIDTH = 416
-IMG_HEIGHT = 416
+IMG_WIDTH = 320
+IMG_HEIGHT = 320
 
 # Default colors
 COLOR_BLUE = (255, 0, 0)
@@ -53,6 +54,7 @@ def get_outputs_names(net):
 def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_list,
                  bodies_list):
     # Draw a bounding box.
+    draw_time_start = time.time()
     cv2.rectangle(frame, (left, top), (right, bottom), COLOR_YELLOW, 2)
 
     if head_body_flag:
@@ -68,6 +70,7 @@ def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_li
     top = max(top, label_size[1])
     cv2.putText(frame, text, (left, top - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.4,
                 COLOR_WHITE, 1)
+    print("draw time: {}".format(time.time() - draw_time_start))
 
 
 def check_inside_hot_zone(hot_zones_list: list, center_x, center_y):
@@ -77,8 +80,21 @@ def check_inside_hot_zone(hot_zones_list: list, center_x, center_y):
     return flag
 
 
-def post_process(frame, outs, conf_threshold, nms_threshold, head_body_flag,
+def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
                  faces_list, bodies_list, hot_zones_list):
+    """
+
+    :param frame:
+    :param outs:
+    :param conf_threshold:
+    :param nms_threshold:
+    :param is_head_flag: True if running head layer, False if running body
+    :param faces_list:
+    :param bodies_list:
+    :param hot_zones_list:
+    :return:
+    """
+    post_time = time.time()
     frame_height = frame.shape[0]
     frame_width = frame.shape[1]
     hot_zone_flag = False
@@ -99,24 +115,25 @@ def post_process(frame, outs, conf_threshold, nms_threshold, head_body_flag,
             if confidence > conf_threshold and class_id == 0:
                 center_x = int(detection[0] * frame_width)
                 center_y = int(detection[1] * frame_height)
-                if not head_body_flag:
+                if not is_head_flag:
                     hot_zone_flag = hot_zone_flag or \
                                     check_inside_hot_zone(hot_zones_list,
                                                           center_x, center_y)
                 width = int(detection[2] * frame_width)
-                if head_body_flag:
+                height = int(detection[3] * frame_height)
+                if is_head_flag:
                     height = int(detection[3] * frame_height * 1.5)
-                else:
-                    height = int(detection[3] * frame_height)
                 left = int(center_x - width / 2)
                 top = int(center_y - height / 2)
                 confidences.append(float(confidence))
                 boxes.append([left, top, width, height])
-
+    print("post time: {}".format(time.time() - post_time))
     # Perform non maximum suppression to eliminate redundant
     # overlapping boxes with lower confidences.
+    nms_time = time.time()
     indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold,
                                nms_threshold)
+    print("nms time: {}".format(time.time() - nms_time))
 
     for i in indices:
         i = i[0]
@@ -128,7 +145,7 @@ def post_process(frame, outs, conf_threshold, nms_threshold, head_body_flag,
         final_boxes.append(box)
         left, top, right, bottom = refined_box(left, top, width, height)
         draw_predict(frame, confidences[i], left, top, right, bottom,
-                     head_body_flag, faces_list, bodies_list)
+                     is_head_flag, faces_list, bodies_list)
     return final_boxes
 
 
