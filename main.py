@@ -11,13 +11,13 @@ from send_and_recive import send_string, get_string
 
 from picamera import PiCamera
 from time import sleep
-
+import os
 camera = PiCamera()
 from yoloface import _main
 
 
-def main(is_first_usage):
-    if is_first_usage:
+def main():
+    if not os.path.exists("coords"):
         take_picture()
         send_string("pool_image.jpg")
         while not get_string():
