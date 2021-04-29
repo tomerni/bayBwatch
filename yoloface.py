@@ -175,12 +175,14 @@ def _main():
         print("forwarding time: {}".format(time.time() - forward_time))
         # Remove the bounding boxes with low confidence and returns lists
         # with the bodies and faces in the frame
+        post_process_time = time.time()
         post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD,
                      True, faces_list, bodies_list, hot_zones_list)
         post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
                      False, faces_list, bodies_list, hot_zones_list)
+        print("post process time is: {}".format(post_process_time - time.time()));
 
-        # sort the faces and bodies to find matches
+    # sort the faces and bodies to find matches
         faces_list.sort(key=lambda x: x[1])
         bodies_list.sort(key=lambda x: x[1][0])
 
