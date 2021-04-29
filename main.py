@@ -7,7 +7,7 @@
     #save coordinates into text file
 
 # send to main
-from send_and_recive import send_string, get_string
+from send_and_recive import send_file, get_string
 
 from picamera import PiCamera
 from time import sleep
@@ -19,7 +19,7 @@ from yoloface import _main
 def main():
     if not os.path.exists("coords"):
         take_picture()
-        send_string("pool_image.jpg")
+        send_file("pool_image.jpg")
         while not get_string():
             continue
         string_to_coords(get_string())
