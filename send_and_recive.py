@@ -7,13 +7,15 @@ def send_string(string):
     json.loads('{"user":"salay", "password":"salay123", "data":' + '"' +string + '"' + '}'))
     return Data.content
 
-def send_file(file_path):
-    with open(file_path, "rb") as a_file:
-        myfiles = {'file': a_file}
-        url = "https://pools-guard.herokuapp.com"
-        Data = requests.post(url,files = myfiles,  json =
-        json.loads('{"user":"salay", "password":"salay123"}'))
-    return Data.content
+def send_picture(file_path, user, password):
+    j = '{"user": "%s", "password": "%s"}' % (user, password)
+    with open(file_path,'rb') as f:
+        files = [
+            ('file', (file_path, f, 'application/octet')),
+            ('json', ('json', j, 'application/json'))
+        ]
+        status = requests.post(r'https://pools-guard.herokuapp.com/pictures', files=files)
+        print(status.content)
 
 def get_string():
     url = "https://pools-guard.herokuapp.com"

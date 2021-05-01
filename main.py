@@ -1,13 +1,5 @@
-# if first usage:
-    # send photo
-    # while no answer:
-        # wait
-    #turn string into tuples of coordinates
-    #open text file in RPi
-    #save coordinates into text file
-
 # send to main
-from send_and_recive import send_file, get_string
+from send_and_recive import send_picture, get_string
 
 from picamera import PiCamera
 from time import sleep
@@ -19,7 +11,7 @@ from yoloface import _main
 def main():
     if not os.path.exists("coords"):
         take_picture()
-        send_file("pool_image.jpg")
+        send_picture("pool_image.jpg", 1,1)
         while not get_string():
             continue
         string_to_coords(get_string())
