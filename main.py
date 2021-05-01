@@ -29,3 +29,16 @@ def string_to_coords(coords_string):
     f = open("coords", "w")
     for coord in coords_string:
         f.write(coord + "\n")
+
+def check_borders(real_coords):
+    # function assumes the following order:
+    # right
+    f = open("coords", "r")
+    lines = f.readlines()
+    hot_zone_coords = []
+    for line in lines:
+        hot_zone_coords.append(line)
+    if hot_zone_coords[0] >= real_coords[0] and hot_zone_coords[1] >= real_coords[1] and hot_zone_coords[2] >= real_coords[2] and hot_zone_coords[3] >= real_coords[3]:
+        return True
+    else:
+        return False

@@ -17,7 +17,7 @@ import os
 import time
 from alarm import switch_alarm
 from yolo_utils import *
-
+from main import check_borders
 #####################################################################
 
 
@@ -70,7 +70,7 @@ def load_args_and_model():
     face_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     face_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-    body_net = cv2.dnn.readNetFromDarknet(FULL_CFG_PATH, FULL_WEIGHTS_PATH)
+    body_net = cv2.dnn.readNetFromDarknet("cfg/yolov3-tiny.cfg","model-weights/yolov3-tiny.weights")
     body_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     body_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
@@ -78,9 +78,6 @@ def load_args_and_model():
 
     return face_net, body_net, args
 
-
-def child_in_hot_zone(x1, y1, x2, y2):
-    pass
 
 
 def get_cap_and_output(args):
@@ -196,7 +193,7 @@ def _main():
         if not alarm_flag:
             child_in_zone = 0
             # TODO: need to receive coordinates of child in frame
-        elif (child_in_zone) and (child_in_hot_zone(1,1,0,0)) == 9:
+        elif (child_in_zone) and (check_borders([])) == 9:
 
             switch_alarm()
             print("ALARMMMMMM")  # NEED TO BE HELI
