@@ -17,7 +17,7 @@ import os
 import time
 from alarm import switch_alarm
 from yolo_utils import *
-from main import check_borders
+# from main import check_borders
 #####################################################################
 
 
@@ -193,7 +193,7 @@ def _main():
         if not alarm_flag:
             child_in_zone = 0
             # TODO: need to receive coordinates of child in frame
-        elif (child_in_zone) and (check_borders([])) == 9:
+        elif (child_in_zone) == 9: #and (check_borders([]))
 
             switch_alarm()
             print("ALARMMMMMM")  # NEED TO BE HELI
