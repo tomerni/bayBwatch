@@ -2,6 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6d3c183b-db1e-40cd-8ff5-bb90c6b5ede8" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/sample_image.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/samples/video1_Trim.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/samples/video2.mp4" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_req.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/send_and_recive.py" beforeDir="false" afterPath="$PROJECT_DIR$/send_and_recive.py" afterDir="false" />
