@@ -122,7 +122,7 @@ def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
                 width = int(detection[2] * frame_width)
                 height = int(detection[3] * frame_height)
                 if is_head_flag:
-                    height = int(detection[3] * frame_height * 1.5)
+                    height = int(detection[3] * frame_height*1.5 )
                 left = int(center_x - width / 2)
                 top = int(center_y - height / 2)
                 confidences.append(float(confidence))

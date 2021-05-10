@@ -70,7 +70,7 @@ def load_args_and_model():
     face_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     face_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-    body_net = cv2.dnn.readNetFromDarknet(FULL_CFG_PATH, FULL_WEIGHTS_PATH)
+    body_net = cv2.dnn.readNetFromDarknet("cfg/yolov3-tiny.cfg","model-weights/yolov3-tiny.weights")
     body_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     body_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
