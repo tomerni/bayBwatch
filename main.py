@@ -1,10 +1,10 @@
 # send to main
 from send_and_recive import send_picture, get_string
 
-from picamera import PiCamera
+#from picamera import PiCamera
 from time import sleep
 import os
-camera = PiCamera()
+#camera = PiCamera()
 from yoloface import _main
 
 
@@ -24,10 +24,10 @@ def main():
 
 
 def take_picture():
-    camera.start_preview()
+    #camera.start_preview()
     sleep(2)
-    camera.capture('/home/pi/bayBwatch/pool_image.jpg')
-    camera.stop_preview()
+    #camera.capture('/home/pi/bayBwatch/pool_image.jpg')
+    #camera.stop_preview()
 
 
 def string_to_coords(coords_string):

@@ -17,7 +17,7 @@ import os
 import time
 from alarm import switch_alarm
 from yolo_utils import *
-from main import check_borders
+#from main import check_borders
 from send_and_recive import get_string
 #####################################################################
 
