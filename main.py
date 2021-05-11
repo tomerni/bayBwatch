@@ -1,15 +1,20 @@
 # send to main
 from send_and_recive import send_picture, get_string
 
-# from picamera import PiCamera
+from picamera import PiCamera
 from time import sleep
 import os
-# camera = PiCamera()
+camera = PiCamera()
 from yoloface import _main
 
 
 def main():
     if not os.path.exists("coords"):
+        # wait for a password
+        password = get_string()
+        while password != "1234":
+            password = get_string()
+        # when password is correct, take and send the picture
         take_picture()
         send_picture("pool_image.jpg", "salay", "salay123")
         while not get_string():

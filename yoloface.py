@@ -17,12 +17,13 @@ import os
 import time
 from alarm import switch_alarm
 from yolo_utils import *
-# from main import check_borders
+from main import check_borders
+from send_and_recive import get_string
 #####################################################################
 
 
-FULL_CFG_PATH = "./cfg/yolov3.cfg"
-FULL_WEIGHTS_PATH = "./model-weights/yolov3.weights"
+FULL_CFG_PATH = "./cfg/yolov3-tiny.cfg"
+FULL_WEIGHTS_PATH = "./model-weights/yolov3-tiny.weights"
 ADULT_CHILD_RATIO = 5.5
 HEAD_PERCENTAGE = 0.75
 
@@ -219,6 +220,17 @@ def _main():
             break
         end = time.time()
         print("Time for round: {}".format(end - start))
+
+        # check if a shutting down request was received:
+        off_req = get_string()
+        if off_req == "true":
+            exit(1)
+        # if the request is a number, turn off for this amount of minutes
+        elif off_req.isnumeric():
+            time.sleep(off_req)
+
+
+
 
     cap.release()
     cv2.destroyAllWindows()
