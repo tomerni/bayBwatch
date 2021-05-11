@@ -21,8 +21,8 @@ from yolo_utils import *
 #####################################################################
 
 
-FULL_CFG_PATH = "./cfg/yolov3.cfg"
-FULL_WEIGHTS_PATH = "./model-weights/yolov3.weights"
+FULL_CFG_PATH = "./cfg/yolov3-tiny.cfg"
+FULL_WEIGHTS_PATH = "./model-weights/yolov3-tiny.weights"
 ADULT_CHILD_RATIO = 5.5
 HEAD_PERCENTAGE = 0.75
 
