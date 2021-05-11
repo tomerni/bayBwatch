@@ -208,7 +208,7 @@ def _main():
 
         show_time = time.time()
         cv2.imshow(wind_name, frame)
-        print("show time: {}".format(time.time() - saving_time))
+        print("show time: {}".format(time.time() - show_time))
         key = cv2.waitKey(1)
         if key == 27 or key == ord('q'):
             print('[i] ==> Interrupted by user!')
