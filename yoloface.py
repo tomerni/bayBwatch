@@ -18,10 +18,9 @@ import time
 from alarm import *
 #from main import take_picture, check_borders
 from yolo_utils import *
-from send_and_recive import get_string, send_picture
 from shapely.geometry import Point, Polygon
 
-from main import get_pool_poly
+from main import get_pool_poly, firebase, database, borders
 #####################################################################
 
 
@@ -244,12 +243,7 @@ def _main():
             break
         end = time.time()
         print("Time for round: {}".format(end - start))
-
-        # check if a shutting down request was received:
-        #take_picture() #TODO
-        #send_picture("pool_image.jpg", "salay", "salay123") #TODO
-
-        off_req = get_string()
+        off_req = borders.get().val()
         if off_req == f"{PASSWORD} true":
             exit(1)
         # if the request is a number, turn off for this amount of minutes

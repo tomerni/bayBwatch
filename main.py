@@ -1,41 +1,63 @@
-from send_and_recive import send_picture, get_string
-import re
-#from picamera import PiCamera
+from picamera import PiCamera
 from time import sleep
 import os
 #camera = PiCamera()
 from yoloface import _main
 from shapely.geometry import Point, Polygon
+import pyrebase
+
 
 global pool_poly
 pool_poly = [None]
 PASSWORD = "1234"
 
+config = {
+    "apiKey": "AIzaSyDNGQpnIZk5-h5-zaz8zrUKfVg77xBjlTg",
+    "authDomain": "life-guard-da054.firebaseapp.com",
+    "databaseURL": "https://life-guard-da054-default-rtdb.firebaseio.com",
+    "projectId": "life-guard-da054",
+    "storageBucket": "life-guard-da054.appspot.com",
+    "messagingSenderId": "286029846592",
+    "appId": "1:286029846592:web:fd6397ad9d2030d00ea7a5",
+    "measurementId": "G-4EFRYT3YQQ"
+};
+
+# save image to db
+# retrieve string
+firebase = pyrebase.initialize_app(config)
+
+database = firebase.database()
+borders = database.child("borders")
+
+storage = firebase.storage()
+#images = storage.child("images")
+
 
 def main():
     if not os.path.exists("coords"):
         # wait for a password
-        password = get_string()
+        password = borders.get().val()
         while password != PASSWORD:
-            password = get_string()
+            password = borders.get().val()
         communication()
     _main()
 
 
 def communication():
     take_picture()
-    send_picture("pool_image.jpg", "salay", "salay123")
-    while "," not in get_string():
+    storage.child("images/pool_image.jpg")
+    while "," not in borders.get().val():
+        # TODO: Check the format borders are returned from db
         take_picture()
-        send_picture("pool_image.jpg", "salay", "salay123")
-    string_to_poly(get_string())
+        storage.child("images/pool_image.jpg") # TODO: Check if there's overloading
+    string_to_poly(borders.get().val())
 
 
 def take_picture():
-    #camera.start_preview()
+    camera.start_preview()
     sleep(2)
-    #camera.capture('/home/pi/bayBwatch/pool_image.jpg')
-    #camera.stop_preview()
+    camera.capture('/home/pi/bayBwatch/pool_image.jpg')
+    camera.stop_preview()
 
 
 def string_to_poly(coords_string):
