@@ -189,6 +189,8 @@ def _main():
     # sort the faces and bodies to find matches
         faces_list.sort(key=lambda x: x[1])
         bodies_list.sort(key=lambda x: x[1][0])
+        child_x = 1
+        child_y = 2
 
         identify_flag, alarm_flag = analyze_objects_in_frame(faces_list,
                                                              bodies_list)
@@ -196,8 +198,8 @@ def _main():
         if not alarm_flag:
             child_in_zone = 0
             # TODO: need to receive coordinates of child in frame
-        elif (child_in_zone) == 9 and (check_borders([])):
-
+        elif (child_in_zone) == 9 and (check_borders([child_x, child_y])):
+            # TODO: Multi-threading
             switch_alarm()
             print("ALARMMMMMM")  # NEED TO BE HELI
             child_in_zone = 0

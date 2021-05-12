@@ -8,7 +8,6 @@ import os
 from yoloface import _main
 from shapely.geometry import Point, Polygon
 
-
 pool_poly = None
 
 
@@ -63,4 +62,5 @@ def check_borders(child_coords):
 
 
 def sort_hot_zone_coords(hot_zone_coords):
+    # TODO: Write sorting function
     return hot_zone_coords
