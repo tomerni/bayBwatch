@@ -16,9 +16,11 @@ import sys
 import os
 import time
 from alarm import switch_alarm
+from main import take_picture, check_borders
 from yolo_utils import *
 #from main import check_borders
-from send_and_recive import get_string
+from send_and_recive import get_string, send_picture
+
 #####################################################################
 
 
@@ -194,7 +196,7 @@ def _main():
         if not alarm_flag:
             child_in_zone = 0
             # TODO: need to receive coordinates of child in frame
-        elif (child_in_zone) == 9: #and (check_borders([]))
+        elif (child_in_zone) == 9 and (check_borders([])):
 
             switch_alarm()
             print("ALARMMMMMM")  # NEED TO BE HELI
@@ -222,15 +224,15 @@ def _main():
         print("Time for round: {}".format(end - start))
 
         # check if a shutting down request was received:
+        take_picture()
+        send_picture("pool_image.jpg", "salay", "salay123")
+
         off_req = get_string()
-        if off_req == "true":
+        if off_req == "1234 true":
             exit(1)
         # if the request is a number, turn off for this amount of minutes
         elif off_req.isnumeric():
-            time.sleep(off_req)
-
-
-
+            time.sleep(int(off_req[5:]) * 60)
 
     cap.release()
     cv2.destroyAllWindows()

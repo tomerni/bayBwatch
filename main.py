@@ -1,11 +1,15 @@
 # send to main
 from send_and_recive import send_picture, get_string
-
+import re
 from picamera import PiCamera
 from time import sleep
 import os
 #camera = PiCamera()
 from yoloface import _main
+from shapely.geometry import Point, Polygon
+
+
+pool_poly = None
 
 
 def main():
@@ -14,13 +18,17 @@ def main():
         password = get_string()
         while password != "1234":
             password = get_string()
-        # when password is correct, take and send the picture
+        communication()
+        _main()
+
+
+def communication():
+    take_picture()
+    send_picture("pool_image.jpg", "salay", "salay123")
+    while "," not in get_string():
         take_picture()
         send_picture("pool_image.jpg", "salay", "salay123")
-        while not get_string():
-            continue
-        string_to_coords(get_string())
-        _main()
+    string_to_poly(get_string())
 
 
 def take_picture():
@@ -30,19 +38,29 @@ def take_picture():
     camera.stop_preview()
 
 
-def string_to_coords(coords_string):
+def string_to_poly(coords_string):
     f = open("coords", "w")
     for coord in coords_string:
         f.write(coord + "\n")
-
-
-def check_borders(real_coords):
-    f = open("coords", "r")
     lines = f.readlines()
-    hot_zone_coords = []
+    hz = []
     for line in lines:
-        hot_zone_coords.append(line)
-    if hot_zone_coords[0] >= real_coords[0] and hot_zone_coords[1] >= real_coords[1] and hot_zone_coords[2] >= real_coords[2] and hot_zone_coords[3] >= real_coords[3]:
-        return True
-    else:
-        return False
+        hz.append(line)
+    sort_hot_zone_coords(hz)
+    # sorted hot_zone_ coords will look like [(x1,y1),(x2,y2),(x3,y3),(x4,y4)]
+    # create a polygon out of the coords
+    poly_coords = [(hz[0], hz[1]), (hz[2], hz[3]), (hz[4], hz[5]), (hz[6], hz[7])]
+    pool_poly = Polygon(poly_coords)
+
+
+def check_borders(child_coords):
+
+    # create a point out of the coords
+    child_x = child_coords[0]
+    child_y = 720 - child_coords[1] # 720 is the height of a RPi camera image
+    child_point = Point(24.952242, 60.1696017)
+    return child_point.within(pool_poly)
+
+
+def sort_hot_zone_coords(hot_zone_coords):
+    return hot_zone_coords
