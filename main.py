@@ -7,7 +7,8 @@ import os
 from yoloface import _main
 from shapely.geometry import Point, Polygon
 
-pool_poly = None
+global pool_poly
+pool_poly = [None]
 PASSWORD = "1234"
 
 
@@ -46,24 +47,17 @@ def string_to_poly(coords_string):
     for line in lines:
         hz.append(line)
     sort_hot_zone_coords(hz)
-    # sorted hot_zone_ coords will look like [(x1,y1),(x2,y2),(x3,y3),(x4,y4)]
-    # create a polygon out of the coords
     poly_coords = [(hz[0], hz[1]), (hz[2], hz[3]), (hz[4], hz[5]), (hz[6], hz[7])]
-    pool_poly = Polygon(poly_coords)
-
-
-def check_borders(child_coords):
-
-    # create a point out of the coords
-    child_x = child_coords[0]
-    child_y = 720 - child_coords[1] # 720 is the height of a RPi camera image
-    child_point = Point(24.952242, 60.1696017)
-    return child_point.within(pool_poly)
+    pool_poly[0] = Polygon(poly_coords)
 
 
 def sort_hot_zone_coords(hot_zone_coords):
     # TODO: Write sorting function
     return hot_zone_coords
+
+
+def get_pool_poly():
+    return pool_poly
 
 
 if __name__ == '__main__':

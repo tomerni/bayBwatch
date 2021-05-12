@@ -18,8 +18,10 @@ import time
 from alarm import *
 #from main import take_picture, check_borders
 from yolo_utils import *
-from alarm import check_borders
 from send_and_recive import get_string, send_picture
+from shapely.geometry import Point, Polygon
+
+from main import get_pool_poly
 #####################################################################
 
 
@@ -28,6 +30,7 @@ FULL_WEIGHTS_PATH = "./model-weights/yolov3-tiny.weights"
 ADULT_CHILD_RATIO = 5.5
 HEAD_PERCENTAGE = 0.75
 PASSWORD = "1234"
+pool_poly = get_pool_poly()
 
 # TODO:
 #  create hot zones and manage them
@@ -105,15 +108,38 @@ def get_cap_and_output(args):
     return cap, output_file
 
 
+def handle_unmatched_faces_and_bodies(faces_list, bodies_list):
+    matched_bodies_faces = list()
+    child_in_frame_counter, adult_in_frame_counter = 0, 0
+    for face in faces_list:
+        for body in bodies_list:
+            if abs(face[1] - body[1][0]) <= 20:
+                matched_bodies_faces.append((face, body))
+    for pair in matched_bodies_faces:
+        ratio = (pair[1][0] + HEAD_PERCENTAGE * pair[0][0]) / \
+                pair[0][0]
+        if ratio <= ADULT_CHILD_RATIO:
+            child_in_frame_counter += 1
+        else:
+            adult_in_frame_counter += 1
+        print("Body Head Ratio: {}".format(ratio))
+    return child_in_frame_counter, adult_in_frame_counter
+
+
 def analyze_objects_in_frame(faces_list, bodies_list):
     adult_in_frame_counter, child_in_frame_counter = 0, 0
     identify_flag, alarm_flag = False, False
+
     # any match
     if len(faces_list) > 0 and len(bodies_list) > 0:
         identify_flag = True
+    else:
+        return False, False
     # incompatible number of heads and bodies
     if len(faces_list) != len(bodies_list):
-        print("Balagan")
+        child_in_frame_counter, adult_in_frame_counter = \
+            handle_unmatched_faces_and_bodies(faces_list, bodies_list)
+        # print("Balagan")
         # continue
     else:
         for i in range(len(faces_list)):
@@ -132,12 +158,8 @@ def analyze_objects_in_frame(faces_list, bodies_list):
 def _main():
     wind_name = 'face detection using YOLOv3'
     cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
-    load_time_start = time.time()
     face_net, body_net, args = load_args_and_model()
-    print("loading time: {}".format(time.time() - load_time_start))
-    cap_time_start = time.time()
     cap, output_file = get_cap_and_output(args)
-    print("cap time: {}".format(time.time() - cap_time_start))
     child_in_zone = 0
 
     # Get the video writer initialized to save the output video
@@ -153,7 +175,6 @@ def _main():
         start = time.time()
         has_frame, frame = cap.read()
         faces_list, bodies_list = list(), list()
-        hot_zones_list = [HotZone(100, 100, 200, 200, 2)]
 
         # Stop the program if reached end of video
         if not has_frame:
@@ -180,10 +201,9 @@ def _main():
         # with the bodies and faces in the frame
         post_process_time = time.time()
         post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD,
-                     True, faces_list, bodies_list, hot_zones_list)
+                     True, faces_list, bodies_list)
         post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
-                     False, faces_list, bodies_list, hot_zones_list)
-        print("post process time is: {}".format(post_process_time - time.time()));
+                     False, faces_list, bodies_list)
 
     # sort the faces and bodies to find matches
         faces_list.sort(key=lambda x: x[1])
@@ -193,31 +213,31 @@ def _main():
 
         identify_flag, alarm_flag = analyze_objects_in_frame(faces_list,
                                                              bodies_list)
-
         if not alarm_flag:
             child_in_zone = 0
-            # TODO: need to receive coordinates of child in frame
-        elif (child_in_zone) == 9 and (check_borders([child_x, child_y])):
+        elif (child_in_zone) == 9:
             # TODO: Multi-threading
-            th.start()
+            switch_alarm()
 
             print("ALARMMMMMM")  # NEED TO BE HELI
             child_in_zone = 0
         else:
-            child_in_zone += 1
+            # this is the hotzone section - if we entered this else it means
+            # that we only have children in the frame. need to go over the
+            # bodies list and check if the center is in the hotzone
+            for body in bodies_list:
+                if (Point(body[2][0], 720 - body[2][1])).within(pool_poly[0]):
+                    child_in_zone += 1
+                    break
 
         # Save the output video to file
-        saving_time = time.time()
         if args.image:
             cv2.imwrite(os.path.join(args.output_dir, output_file),
                         frame.astype(np.uint8))
         else:
             video_writer.write(frame.astype(np.uint8))
-        print("saving time: {}".format(time.time() - saving_time))
 
-        show_time = time.time()
         cv2.imshow(wind_name, frame)
-        print("show time: {}".format(time.time() - show_time))
         key = cv2.waitKey(1)
         if key == 27 or key == ord('q'):
             print('[i] ==> Interrupted by user!')
