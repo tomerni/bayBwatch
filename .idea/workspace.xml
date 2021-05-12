@@ -2,15 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6d3c183b-db1e-40cd-8ff5-bb90c6b5ede8" name="Default Changelist" comment="">
-<<<<<<< HEAD
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/alarm.py" beforeDir="false" afterPath="$PROJECT_DIR$/alarm.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/yoloface.py" beforeDir="false" afterPath="$PROJECT_DIR$/yoloface.py" afterDir="false" />
-=======
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
->>>>>>> HeadBodyRatio
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,10 +22,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1qyCNPnVc9IBdXiY8ryonM4fQs3" />
-<<<<<<< HEAD
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
-=======
->>>>>>> HeadBodyRatio
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -39,12 +30,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-<<<<<<< HEAD
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-=======
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/samples" />
->>>>>>> HeadBodyRatio
     <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RecentsManager">
@@ -56,11 +42,7 @@
       <recent name="C:\Users\97252\Desktop\Code\codingprojects\bayBwatch" />
     </key>
   </component>
-<<<<<<< HEAD
-  <component name="RunManager" selected="Python.main">
-=======
   <component name="RunManager" selected="Python.yoloface">
->>>>>>> HeadBodyRatio
     <configuration name="exp (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="bayBwatch" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -103,12 +85,8 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-<<<<<<< HEAD
-    <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-=======
     <configuration name="sendAndRecive" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="bayBwatch" />
->>>>>>> HeadBodyRatio
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -116,18 +94,10 @@
       </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-<<<<<<< HEAD
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
-=======
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/sendAndRecive.py" />
->>>>>>> HeadBodyRatio
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -183,19 +153,11 @@
       <item itemvalue="Python.exp (1)" />
       <item itemvalue="Python.test_req" />
       <item itemvalue="Python.yoloface" />
-<<<<<<< HEAD
-      <item itemvalue="Python.main" />
-    </list>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Python.main" />
-=======
       <item itemvalue="Python.sendAndRecive" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.sendAndRecive" />
->>>>>>> HeadBodyRatio
         <item itemvalue="Python.yoloface" />
         <item itemvalue="Python.test_req" />
         <item itemvalue="Python.exp (1)" />

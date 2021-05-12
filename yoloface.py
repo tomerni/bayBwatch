@@ -15,12 +15,11 @@ import argparse
 import sys
 import os
 import time
-from alarm import switch_alarm
-from main import take_picture, check_borders
+from alarm import *
+#from main import take_picture, check_borders
 from yolo_utils import *
-#from main import check_borders
+from alarm import check_borders
 from send_and_recive import get_string, send_picture
-
 #####################################################################
 
 
@@ -28,7 +27,7 @@ FULL_CFG_PATH = "./cfg/yolov3-tiny.cfg"
 FULL_WEIGHTS_PATH = "./model-weights/yolov3-tiny.weights"
 ADULT_CHILD_RATIO = 5.5
 HEAD_PERCENTAGE = 0.75
-
+PASSWORD = "1234"
 
 # TODO:
 #  create hot zones and manage them
@@ -200,7 +199,8 @@ def _main():
             # TODO: need to receive coordinates of child in frame
         elif (child_in_zone) == 9 and (check_borders([child_x, child_y])):
             # TODO: Multi-threading
-            switch_alarm()
+            th.start()
+
             print("ALARMMMMMM")  # NEED TO BE HELI
             child_in_zone = 0
         else:
@@ -226,15 +226,15 @@ def _main():
         print("Time for round: {}".format(end - start))
 
         # check if a shutting down request was received:
-        take_picture()
-        send_picture("pool_image.jpg", "salay", "salay123")
+        #take_picture() #TODO
+        #send_picture("pool_image.jpg", "salay", "salay123") #TODO
 
         off_req = get_string()
-        if off_req == "1234 true":
+        if off_req == f"{PASSWORD} true":
             exit(1)
         # if the request is a number, turn off for this amount of minutes
         elif off_req.isnumeric():
-            time.sleep(int(off_req[5:]) * 60)
+            time.sleep(int(off_req[len(PASSWORD) + 1:]) * 60)
 
     cap.release()
     cv2.destroyAllWindows()

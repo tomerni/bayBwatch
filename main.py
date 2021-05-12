@@ -1,7 +1,6 @@
-# send to main
 from send_and_recive import send_picture, get_string
 import re
-from picamera import PiCamera
+#from picamera import PiCamera
 from time import sleep
 import os
 #camera = PiCamera()
@@ -9,16 +8,17 @@ from yoloface import _main
 from shapely.geometry import Point, Polygon
 
 pool_poly = None
+PASSWORD = "1234"
 
 
 def main():
     if not os.path.exists("coords"):
         # wait for a password
         password = get_string()
-        while password != "1234":
+        while password != PASSWORD:
             password = get_string()
         communication()
-        _main()
+    _main()
 
 
 def communication():
@@ -31,10 +31,10 @@ def communication():
 
 
 def take_picture():
-    camera.start_preview()
+    #camera.start_preview()
     sleep(2)
-    camera.capture('/home/pi/bayBwatch/pool_image.jpg')
-    camera.stop_preview()
+    #camera.capture('/home/pi/bayBwatch/pool_image.jpg')
+    #camera.stop_preview()
 
 
 def string_to_poly(coords_string):
@@ -64,3 +64,7 @@ def check_borders(child_coords):
 def sort_hot_zone_coords(hot_zone_coords):
     # TODO: Write sorting function
     return hot_zone_coords
+
+
+if __name__ == '__main__':
+    main()
