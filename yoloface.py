@@ -38,10 +38,10 @@ HEAD_PERCENTAGE = 0.75
 def load_args_and_model():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-cfg', type=str,
-                        default='./cfg/yolov3-tiny-obj.cfg',
+                        default='./cfg/yolov3-face.cfg',
                         help='path to config file')
     parser.add_argument('--model-weights', type=str,
-                        default='./model-weights/yolov3-tiny-obj_last.weights',
+                        default='./model-weights/yolov3-wider_16000.weights',
                         help='path to weights of model')
     parser.add_argument('--image', type=str, default='',
                         help='path to image file')
@@ -197,12 +197,7 @@ def _main():
         post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD,
                      True, faces_list, bodies_list)
         post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
-<<<<<<< HEAD
-                     False, faces_list, bodies_list, hot_zones_list)
-        print("post process time is: {}".format(post_process_time - time.time()));
-=======
                      False, faces_list, bodies_list)
->>>>>>> 6d45195733ba86d9397c575e6ed9d71c37866800
 
     # sort the faces and bodies to find matches
         faces_list.sort(key=lambda x: x[1])
