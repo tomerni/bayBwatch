@@ -16,11 +16,8 @@ import sys
 import os
 import time
 from alarm import *
-#from main import take_picture, check_borders
 from yolo_utils import *
-from shapely.geometry import Point, Polygon
 
-from main import get_pool_poly, firebase, database, borders
 #####################################################################
 
 
@@ -29,7 +26,6 @@ FULL_WEIGHTS_PATH = "./model-weights/yolov3-tiny.weights"
 ADULT_CHILD_RATIO = 5.5
 HEAD_PERCENTAGE = 0.75
 PASSWORD = "1234"
-pool_poly = get_pool_poly()
 
 # TODO:
 #  create hot zones and manage them
@@ -154,9 +150,16 @@ def analyze_objects_in_frame(faces_list, bodies_list):
     return identify_flag, alarm_flag
 
 
-def _main():
+# pool_coords = [(x1, y1),(x2, y2),(x3, y3),(x4, y4)]
+def check_borders(x,y, hz):
+    # return (hz[0][0] < x < hz[1][0] or hz[2][0] < x < hz[3][0]) and \
+    #        (hz[0][1] < y < hz[1][1] or hz[2][1] < y < hz[3][1])
+    return True
+
+
+def _main(): # storage, info, pool_coords
     wind_name = 'face detection using YOLOv3'
-    cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
+    #cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
     face_net, body_net, args = load_args_and_model()
     cap, output_file = get_cap_and_output(args)
     child_in_zone = 0
@@ -225,9 +228,9 @@ def _main():
             # that we only have children in the frame. need to go over the
             # bodies list and check if the center is in the hotzone
             for body in bodies_list:
-                if (Point(body[2][0], 720 - body[2][1])).within(pool_poly[0]):
-                    child_in_zone += 1
-                    break
+                # if (check_borders(body[2][0], 720 - body[2][1], pool_coords)):
+                child_in_zone += 1
+                break
 
         # Save the output video to file
         if args.image:
@@ -243,19 +246,20 @@ def _main():
             break
         end = time.time()
         print("Time for round: {}".format(end - start))
-        off_req = borders.get().val()
-        if off_req == f"{PASSWORD} true":
-            exit(1)
-        # if the request is a number, turn off for this amount of minutes
-        elif off_req.isnumeric():
-            time.sleep(int(off_req[len(PASSWORD) + 1:]) * 60)
+        # off_req = ""
+        # for x in info.get().each():
+        #     off_req = x.val()
+        # if off_req == f"{PASSWORD} true":
+        #     exit(1)
+        # # if the request is a number, turn off for this amount of minutes
+        # elif off_req.isnumeric():
+        #     time.sleep(int(off_req[len(PASSWORD) + 1:]) * 60)
 
     cap.release()
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
 
     print('==> All done!')
     print('***********************************************************')
 
-
 if __name__ == '__main__':
-    print(_main())
+    _main()
