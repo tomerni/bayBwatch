@@ -58,13 +58,15 @@ def process_pool_img(storage, info):
     response = ""
     for x in info.get().each():
         response = x.val()
+        print("first try: " + response)
     # TODO: If the user wants another picture, response is "1234 N"
     while "," not in response:
         if "N" in response:
             take_picture()
             storage.child("images/pool_image.jpg")  # TODO: Check if there's overloading
-            for x in info.get().each():
-                response = x.val()
+        for x in info.get().each():
+            response = x.val()
+    print("final try: " + response)
     borders = ""
     for x in info.get().each():
         borders = x.val()
@@ -83,7 +85,10 @@ def take_picture():
 def string_to_poly(coords_string):
     f = open("coords", "w")
     for coord in coords_string:
-        f.write(coord + "\n")
+        if coord != ",":
+            f.write(coord + "\n")
+    f.close()
+    f = open("coords", "r")
     lines = f.readlines()
     hz = []
     for line in lines:
@@ -91,7 +96,7 @@ def string_to_poly(coords_string):
     i = 0
     hz_tuples =[]
     while(i < 7):
-        hz_tuples.append((hz[i], hz[i+1]))
+        hz_tuples.append((hz[i][:-1], hz[i+1][:-1]))
         i += 2
     sort_hot_zone_coords(hz_tuples)
     pool_coords = [(hz[0], hz[1]), (hz[2], hz[3]), (hz[4], hz[5]),

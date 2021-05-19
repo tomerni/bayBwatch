@@ -11,7 +11,7 @@ def switch_alarm():
     GPIO.setwarnings(False)
     print("alarm is on")
     GPIO.setmode(GPIO.BCM)
-    buzzer = 18  # the number of the connection
+    buzzer = 17  # the number of the connection
     GPIO.setup(buzzer, GPIO.OUT)
     t_end = time.time() + 15
     while time.time() < t_end: # TODO: change condition to adult detection
@@ -21,5 +21,4 @@ def switch_alarm():
         GPIO.output(buzzer, GPIO.LOW)
         print("No Beep")
         sleep(0.5)
-
 
