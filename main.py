@@ -5,13 +5,12 @@ from yoloface import _main
 import pyrebase
 
 PASSWORD = "1234"
-
+camera = PiCamera()
 
 # Or needs to set any data to the child "info".
 # that is, for passowrd: "info":"1234", for borders: "info":"0,0,1,1,0,0,1,1"
 
 def main():
-    camera = PiCamera()
     pool_coords = []
     config = {
         "apiKey": "AIzaSyDNGQpnIZk5-h5-zaz8zrUKfVg77xBjlTg",
@@ -37,21 +36,25 @@ def main():
         # wait for a password
         while not info.get().each():
             continue
+        print("I reached here")
         password = ""
         for x in info.get().each():
             password = x.val()
+            print(password)
         while password != PASSWORD:
             # Maybe send somehow a message that the password is wrong
             for x in info.get().each():
                 password = x.val()
         pool_coords = process_pool_img(storage, info)
+    
     info.remove()
     _main() #storage, info, pool_coords
 
 
 def process_pool_img(storage, info):
     take_picture()
-    storage.child("images/pool_image.jpg")
+    storage.child("images/pool_image.jpg").put("pool_image.jpg")
+    print("uploaded to storage")
     response = ""
     for x in info.get().each():
         response = x.val()
@@ -74,6 +77,7 @@ def take_picture():
     sleep(2)
     camera.capture('/home/pi/bayBwatch/pool_image.jpg')
     camera.stop_preview()
+    print("took picture")
 
 
 def string_to_poly(coords_string):
@@ -84,7 +88,12 @@ def string_to_poly(coords_string):
     hz = []
     for line in lines:
         hz.append(line)
-    sort_hot_zone_coords(hz)
+    i = 0
+    hz_tuples =[]
+    while(i < 7):
+        hz_tuples.append((hz[i], hz[i+1]))
+        i += 2
+    sort_hot_zone_coords(hz_tuples)
     pool_coords = [(hz[0], hz[1]), (hz[2], hz[3]), (hz[4], hz[5]),
                    (hz[6], hz[7])]
     return pool_coords

@@ -239,7 +239,7 @@ def _main(): # storage, info, pool_coords
         else:
             video_writer.write(frame.astype(np.uint8))
 
-        cv2.imshow(wind_name, frame)
+        #cv2.imshow(wind_name, frame)
         key = cv2.waitKey(1)
         if key == 27 or key == ord('q'):
             print('[i] ==> Interrupted by user!')

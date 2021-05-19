@@ -19,15 +19,14 @@ storage.child("pool_images/pool_image.jpg").put("pool_image.jpg")
 database = firebase.database()
 info = database.child("info")
 
-info.set({"info": "1,0,0,0.5,1,0.35,1,0.2"})
-info.set({"info": "8,8,5,7.5,4,5.8,8,8"})
-info.set({"info": "1,0,0,0.5,1,0.35,1,0.2"})
+#info.set({"info": "8,8,5,7.5,4,5.8,8,8"})
+#info.set({"info": "1,0,0,0.5,1,0.35,1,0.2"})
 
 
-if info.get().each():
-    for x in info.get().each():
-        print("\n key is: ")
-        print(x.key())
-        print("\n val is:")
-        print(x.val())
+#while not info.get().each():
+#    continue
+print("I reached here")
+password = ""
+for x in info.get().each():
+    password = x.val()
 
