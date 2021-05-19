@@ -151,7 +151,7 @@ def analyze_objects_in_frame(faces_list, bodies_list):
 
 def _main():
     wind_name = 'face detection using YOLOv3'
-    cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
+    #cv2.namedWindow(wind_name, cv2._NORMAL)
     face_net, body_net, args = load_args_and_model()
     cap, output_file = get_cap_and_output(args)
     child_in_zone = 0
@@ -236,7 +236,7 @@ def _main():
         print("Time for round: {}".format(end - start))
 
     cap.release()
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
 
     print('==> All done!')
     print('***********************************************************')
