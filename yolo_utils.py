@@ -16,7 +16,9 @@
 import datetime
 import numpy as np
 import cv2
-import time
+
+# updated
+
 
 # -------------------------------------------------------------------
 # Parameters
@@ -25,8 +27,8 @@ from hotzone import HotZone
 
 CONF_THRESHOLD = 0.5
 NMS_THRESHOLD = 0.4
-IMG_WIDTH = 320
-IMG_HEIGHT = 320
+IMG_WIDTH = 416
+IMG_HEIGHT = 416
 
 # Default colors
 COLOR_BLUE = (255, 0, 0)
@@ -52,14 +54,14 @@ def get_outputs_names(net):
 
 # Draw the predicted bounding box
 def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_list,
-                 bodies_list, center_x, center_y):
+                 bodies_list):
     # Draw a bounding box.
     cv2.rectangle(frame, (left, top), (right, bottom), COLOR_YELLOW, 2)
 
     if head_body_flag:
-        faces_list.append((bottom - top, bottom, (center_x, center_y)))
+        faces_list.append((bottom - top, bottom))
     else:
-        bodies_list.append((bottom - top, (top, bottom), (center_x, center_y)))
+        bodies_list.append((bottom - top, (top, bottom)))
 
     text = '{:.2f}'.format(conf)
 
@@ -71,10 +73,16 @@ def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_li
                 COLOR_WHITE, 1)
 
 
-def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
-                 faces_list, bodies_list):
-    """
+def check_inside_hot_zone(hot_zones_list: list, center_x, center_y):
+    flag = False
+    for i in hot_zones_list:
+        flag = flag or i.is_inside(center_x, center_y)
+    return flag
 
+
+def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
+                 faces_list, bodies_list, hot_zones_list):
+    """
     :param frame:
     :param outs:
     :param conf_threshold:
@@ -87,6 +95,7 @@ def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
     """
     frame_height = frame.shape[0]
     frame_width = frame.shape[1]
+    hot_zone_flag = False
 
     # Scan through all the bounding boxes output from the network and keep only
     # the ones with high confidence scores. Assign the box's class label as the
@@ -104,14 +113,19 @@ def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
             if confidence > conf_threshold and class_id == 0:
                 center_x = int(detection[0] * frame_width)
                 center_y = int(detection[1] * frame_height)
+                if not is_head_flag:
+                    hot_zone_flag = hot_zone_flag or \
+                                    check_inside_hot_zone(hot_zones_list,
+                                                          center_x, center_y)
                 width = int(detection[2] * frame_width)
                 height = int(detection[3] * frame_height)
                 if is_head_flag:
-                    height = int(detection[3] * frame_height*1.5 )
+                    height = int(detection[3] * frame_height * 1.5)
                 left = int(center_x - width / 2)
                 top = int(center_y - height / 2)
                 confidences.append(float(confidence))
-                boxes.append([left, top, width, height, center_x, center_y])
+                boxes.append([left, top, width, height])
+
     # Perform non maximum suppression to eliminate redundant
     # overlapping boxes with lower confidences.
     indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold,
@@ -124,13 +138,42 @@ def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
         top = box[1]
         width = box[2]
         height = box[3]
-        center_x = box[4]
-        center_y = box[5]
         final_boxes.append(box)
         left, top, right, bottom = refined_box(left, top, width, height)
         draw_predict(frame, confidences[i], left, top, right, bottom,
-                     is_head_flag, faces_list, bodies_list, center_x, center_y)
+                     is_head_flag, faces_list, bodies_list)
     return final_boxes
+
+
+class FPS:
+    def __init__(self):
+        # store the start time, end time, and total number of frames
+        # that were examined between the start and end intervals
+        self._start = None
+        self._end = None
+        self._num_frames = 0
+
+    def start(self):
+        self._start = datetime.datetime.now()
+        return self
+
+    def stop(self):
+        self._end = datetime.datetime.now()
+
+    def update(self):
+        # increment the total number of frames examined during the
+        # start and end intervals
+        self._num_frames += 1
+
+    def elapsed(self):
+        # return the total number of seconds between the start and
+        # end interval
+        return (self._end - self._start).total_seconds()
+
+    def fps(self):
+        # compute the (approximate) frames per second
+        return self._num_frames / self.elapsed()
+
 
 def refined_box(left, top, width, height):
     right = left + width

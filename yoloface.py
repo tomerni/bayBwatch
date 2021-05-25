@@ -15,18 +15,17 @@ import argparse
 import sys
 import os
 import time
-from alarm import *
 
 from yolo_utils import *
+# updated 
 
 #####################################################################
 
 
-FULL_CFG_PATH = "./cfg/yolov3-tiny.cfg"
-FULL_WEIGHTS_PATH = "./model-weights/yolov3-tiny.weights"
+FULL_CFG_PATH = "./cfg/yolov3.cfg"
+FULL_WEIGHTS_PATH = "./model-weights/yolov3.weights"
 ADULT_CHILD_RATIO = 5.5
 HEAD_PERCENTAGE = 0.75
-PASSWORD = "1234"
 
 
 # TODO:
@@ -40,10 +39,10 @@ PASSWORD = "1234"
 def load_args_and_model():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-cfg', type=str,
-                        default='./cfg/yolov3-face.cfg',
+                        default='./cfg/yolov3-tiny-obj.cfg',
                         help='path to config file')
     parser.add_argument('--model-weights', type=str,
-                        default='./model-weights/yolov3-wider_16000.weights',
+                        default='./model-weights/yolov3-tiny-obj_last.weights',
                         help='path to weights of model')
     parser.add_argument('--image', type=str, default='',
                         help='path to image file')
@@ -65,20 +64,16 @@ def load_args_and_model():
 
     # Give the configuration and weight files for the model and load the network
     # using them.
-
-    net_load = time.time()
-
     face_net = cv2.dnn.readNetFromDarknet(args.model_cfg, args.model_weights)
     face_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     face_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-    body_net = cv2.dnn.readNetFromDarknet("cfg/yolov3-tiny.cfg","model-weights/yolov3-tiny.weights")
+    body_net = cv2.dnn.readNetFromDarknet("cfg/yolov3-tiny.cfg", "model-weights/yolov3-tiny.weights")
     body_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     body_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-    print("net loading time: {}".format(time.time() - net_load))
-
     return face_net, body_net, args
+
 
 def get_cap_and_output(args):
     if args.image:
@@ -103,38 +98,15 @@ def get_cap_and_output(args):
     return cap, output_file
 
 
-def handle_unmatched_faces_and_bodies(faces_list, bodies_list):
-    matched_bodies_faces = list()
-    child_in_frame_counter, adult_in_frame_counter = 0, 0
-    for face in faces_list:
-        for body in bodies_list:
-            if abs(face[1] - body[1][0]) <= 20:
-                matched_bodies_faces.append((face, body))
-    for pair in matched_bodies_faces:
-        ratio = (pair[1][0] + HEAD_PERCENTAGE * pair[0][0]) / \
-                pair[0][0]
-        if ratio <= ADULT_CHILD_RATIO:
-            child_in_frame_counter += 1
-        else:
-            adult_in_frame_counter += 1
-        print("Body Head Ratio: {}".format(ratio))
-    return child_in_frame_counter, adult_in_frame_counter
-
-
 def analyze_objects_in_frame(faces_list, bodies_list):
     adult_in_frame_counter, child_in_frame_counter = 0, 0
     identify_flag, alarm_flag = False, False
-
     # any match
     if len(faces_list) > 0 and len(bodies_list) > 0:
         identify_flag = True
-    else:
-        return False, False
     # incompatible number of heads and bodies
     if len(faces_list) != len(bodies_list):
-        child_in_frame_counter, adult_in_frame_counter = \
-            handle_unmatched_faces_and_bodies(faces_list, bodies_list)
-        # print("Balagan")
+        print("Balagan")
         # continue
     else:
         for i in range(len(faces_list)):
@@ -149,20 +121,18 @@ def analyze_objects_in_frame(faces_list, bodies_list):
         alarm_flag = True
     return identify_flag, alarm_flag
 
-
 # pool_coords = [(x1, y1),(x2, y2),(x3, y3),(x4, y4)]
 def check_borders(x,y, hz):
     # return (hz[0][0] < x < hz[1][0] or hz[2][0] < x < hz[3][0]) and \
     #        (hz[0][1] < y < hz[1][1] or hz[2][1] < y < hz[3][1])
     return True
 
-
-def _main(): # storage, info, pool_coords
+def _main():
     wind_name = 'face detection using YOLOv3'
     cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
-
     face_net, body_net, args = load_args_and_model()
-    cap, output_file = get_cap_and_output(args)
+    cap = cv2.VideoCapture(0)
+    output_file = ''
     child_in_zone = 0
 
     # Get the video writer initialized to save the output video
@@ -178,6 +148,7 @@ def _main(): # storage, info, pool_coords
         start = time.time()
         has_frame, frame = cap.read()
         faces_list, bodies_list = list(), list()
+        hot_zones_list = [HotZone(100, 100, 200, 200, 2)]
 
         # Stop the program if reached end of video
         if not has_frame:
@@ -196,31 +167,19 @@ def _main(): # storage, info, pool_coords
         body_net.setInput(blob)
 
         # Runs the forward pass to get output of the output layers
-        forward_time = time.time()
         face_outs = face_net.forward(get_outputs_names(face_net))
         body_outs = body_net.forward(get_outputs_names(body_net))
-        print("forwarding time: {}".format(time.time() - forward_time))
+
         # Remove the bounding boxes with low confidence and returns lists
         # with the bodies and faces in the frame
-        post_process_time = time.time()
         post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD,
-                     True, faces_list, bodies_list)
+                     True, faces_list, bodies_list, hot_zones_list)
         post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
-                     False, faces_list, bodies_list)
+                     False, faces_list, bodies_list, hot_zones_list)
 
-    # sort the faces and bodies to find matches
+        # sort the faces and bodies to find matches
         faces_list.sort(key=lambda x: x[1])
         bodies_list.sort(key=lambda x: x[1][0])
-
-
-        identify_flag, alarm_flag = analyze_objects_in_frame(faces_list,
-                                                             bodies_list)
-        if not alarm_flag:
-            child_in_zone = 0
-        elif (child_in_zone) == 9:
-            # TODO: Multi-threading
-            switch_alarm()
-
 
         identify_flag, alarm_flag = analyze_objects_in_frame(faces_list,
                                                              bodies_list)
@@ -229,17 +188,20 @@ def _main(): # storage, info, pool_coords
             child_in_zone = 0
         elif child_in_zone == 9:
             print("ALARMMMMMM")  # NEED TO BE HELI
+            switch_alarm()
+            # TODO: Add borders check
             child_in_zone = 0
         else:
+            child_in_zone += 1
             # this is the hotzone section - if we entered this else it means
             # that we only have children in the frame. need to go over the
             # bodies list and check if the center is in the hotzone
-            for body in bodies_list:
+            # for body in bodies_list:
                 # if (check_borders(body[2][0], 720 - body[2][1], pool_coords)):
 
-                if (body[2][0], body[2][1]):  # change the empty list
-                    child_in_zone += 1
-                    break
+                # if (body[2][0], body[2][1]):  # change the empty list
+                    # child_in_zone += 1
+                    # break
 
         # Save the output video to file
         if args.image:
@@ -249,27 +211,28 @@ def _main(): # storage, info, pool_coords
             video_writer.write(frame.astype(np.uint8))
 
         cv2.imshow(wind_name, frame)
+
         key = cv2.waitKey(1)
         if key == 27 or key == ord('q'):
             print('[i] ==> Interrupted by user!')
             break
         end = time.time()
         print("Time for round: {}".format(end - start))
-        # off_req = ""
+        off_req = ""
         # for x in info.get().each():
-        #     off_req = x.val()
+            # off_req = x.val()
         # if off_req == f"{PASSWORD} true":
-        #     exit(1)
-        # # if the request is a number, turn off for this amount of minutes
+            # exit(1)
+        # if the request is a number, turn off for this amount of minutes
         # elif off_req.isnumeric():
-        #     time.sleep(int(off_req[len(PASSWORD) + 1:]) * 60)
+            # time.sleep(int(off_req[len(PASSWORD) + 1:]) * 60)
 
     cap.release()
-    #cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
 
     print('==> All done!')
     print('***********************************************************')
 
 
 if __name__ == '__main__':
-    print(_main())
+   print(_main())
