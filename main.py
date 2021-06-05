@@ -48,7 +48,8 @@ def main():
         pool_coords = process_pool_img(storage, info)
     
     info.remove()
-    _main(storage, info, pool_coords) #storage, info, pool_coords
+    camera.close()
+    _main(info, pool_coords) #storage, info, pool_coords
 
 
 def process_pool_img(storage, info):

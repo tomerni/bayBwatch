@@ -18,7 +18,7 @@ import time
 
 from yolo_utils import *
 # updated 
-
+from alarm import switch_alarm
 #####################################################################
 
 
@@ -121,13 +121,12 @@ def analyze_objects_in_frame(faces_list, bodies_list):
         alarm_flag = True
     return identify_flag, alarm_flag
 
-# pool_coords = [(x1, y1),(x2, y2),(x3, y3),(x4, y4)]
 def check_borders(x,y, hz):
     # return (hz[0][0] < x < hz[1][0] or hz[2][0] < x < hz[3][0]) and \
     #        (hz[0][1] < y < hz[1][1] or hz[2][1] < y < hz[3][1])
     return True
 
-def _main():
+def _main(info, pool_coords):
     wind_name = 'face detection using YOLOv3'
     cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
     face_net, body_net, args = load_args_and_model()
@@ -186,7 +185,7 @@ def _main():
 
         if not alarm_flag:
             child_in_zone = 0
-        elif child_in_zone == 9:
+        elif child_in_zone == 1:
             print("ALARMMMMMM")  # NEED TO BE HELI
             switch_alarm()
             # TODO: Add borders check
@@ -196,12 +195,11 @@ def _main():
             # this is the hotzone section - if we entered this else it means
             # that we only have children in the frame. need to go over the
             # bodies list and check if the center is in the hotzone
-            # for body in bodies_list:
-                # if (check_borders(body[2][0], 720 - body[2][1], pool_coords)):
-
-                # if (body[2][0], body[2][1]):  # change the empty list
-                    # child_in_zone += 1
-                    # break
+            for body in bodies_list:
+                if (check_borders(body[2][0], 720 - body[2][1], pool_coords)):
+                    if (body[2][0], body[2][1]):  # change the empty list
+                        child_in_zone += 1
+                        break
 
         # Save the output video to file
         if args.image:
@@ -219,13 +217,15 @@ def _main():
         end = time.time()
         print("Time for round: {}".format(end - start))
         off_req = ""
-        # for x in info.get().each():
-            # off_req = x.val()
-        # if off_req == f"{PASSWORD} true":
-            # exit(1)
-        # if the request is a number, turn off for this amount of minutes
-        # elif off_req.isnumeric():
-            # time.sleep(int(off_req[len(PASSWORD) + 1:]) * 60)
+        if info.get().each():
+            for x in info.get().each():
+                off_req = x.val()
+            if off_req == f"{PASSWORD} true":
+            # TODO: Release camrea resources
+                exit(1)
+            #if the request is a number, turn off for this amount of minutes
+            elif off_req.isnumeric():
+                time.sleep(int(off_req[len(PASSWORD) + 1:]) * 60)
 
     cap.release()
     cv2.destroyAllWindows()

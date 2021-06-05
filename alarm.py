@@ -21,4 +21,4 @@ def switch_alarm():
         GPIO.output(buzzer, GPIO.LOW)
         print("No Beep")
         sleep(0.5)
-
+    
