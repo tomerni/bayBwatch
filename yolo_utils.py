@@ -24,9 +24,9 @@ import time
 from hotzone import HotZone
 
 CONF_THRESHOLD = 0.5
-NMS_THRESHOLD = 0.4
-IMG_WIDTH = 320
-IMG_HEIGHT = 320
+NMS_THRESHOLD = 0.43
+IMG_WIDTH = 416
+IMG_HEIGHT = 416
 
 # Default colors
 COLOR_BLUE = (255, 0, 0)
@@ -52,12 +52,12 @@ def get_outputs_names(net):
 
 # Draw the predicted bounding box
 def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_list,
-                 bodies_list, center_x, center_y):
+                 bodies_list, center_x, center_y, class_id):
     # Draw a bounding box.
     cv2.rectangle(frame, (left, top), (right, bottom), COLOR_YELLOW, 2)
 
-    if head_body_flag:
-        faces_list.append((bottom - top, bottom, (center_x, center_y)))
+    if class_id == 0:
+        faces_list.append((bottom - top, top, (center_x, center_y)))
     else:
         bodies_list.append((bottom - top, (top, bottom), (center_x, center_y)))
 
@@ -101,17 +101,17 @@ def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
             confidence = scores[class_id]
             # confidence above the threshold and class_id = 0 i.e. person
             # according to the coco.names and face
-            if confidence > conf_threshold and class_id == 0:
+            if confidence >= conf_threshold:
                 center_x = int(detection[0] * frame_width)
                 center_y = int(detection[1] * frame_height)
                 width = int(detection[2] * frame_width)
                 height = int(detection[3] * frame_height)
-                if is_head_flag:
-                    height = int(detection[3] * frame_height * 1.5)
+                # if is_head_flag:
+                #     height = int(detection[3] * frame_height * 1.5)
                 left = int(center_x - width / 2)
                 top = int(center_y - height / 2)
                 confidences.append(float(confidence))
-                boxes.append([left, top, width, height, center_x, center_y])
+                boxes.append([left, top, width, height, center_x, center_y, class_id])
     # Perform non maximum suppression to eliminate redundant
     # overlapping boxes with lower confidences.
     indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold,
@@ -129,20 +129,20 @@ def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
         final_boxes.append(box)
         left, top, right, bottom = refined_box(left, top, width, height)
         draw_predict(frame, confidences[i], left, top, right, bottom,
-                     is_head_flag, faces_list, bodies_list, center_x, center_y)
+                     is_head_flag, faces_list, bodies_list, center_x, center_y, box[-1])
     return final_boxes
 
 def refined_box(left, top, width, height):
     right = left + width
     bottom = top + height
-
-    original_vert_height = bottom - top
-    top = int(top + original_vert_height * 0.15)
-    bottom = int(bottom - original_vert_height * 0.05)
-
-    margin = ((bottom - top) - (right - left)) // 2
-    left = left - margin if (bottom - top - right + left) % 2 == 0 else left - margin - 1
-
-    right = right + margin
-
     return left, top, right, bottom
+    # original_vert_height = bottom - top
+    # top = int(top + original_vert_height * 0.15)
+    # bottom = int(bottom - original_vert_height * 0.05)
+    #
+    # margin = ((bottom - top) - (right - left)) // 2
+    # left = left - margin if (bottom - top - right + left) % 2 == 0 else left - margin - 1
+    #
+    # right = right + margin
+    #
+    # return left, top, right, bottom

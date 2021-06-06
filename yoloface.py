@@ -38,10 +38,10 @@ HEAD_PERCENTAGE = 0.75
 def load_args_and_model():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-cfg', type=str,
-                        default='./cfg/yolov3-tiny-obj.cfg',
+                        default='./cfg/yolov4-tiny.cfg',
                         help='path to config file')
     parser.add_argument('--model-weights', type=str,
-                        default='./model-weights/yolov3-tiny-obj_last.weights',
+                        default='./model-weights/yolov4-tiny-crowdhuman-416x416_5000.weights',
                         help='path to weights of model')
     parser.add_argument('--image', type=str, default='',
                         help='path to image file')
@@ -69,14 +69,14 @@ def load_args_and_model():
     face_net = cv2.dnn.readNetFromDarknet(args.model_cfg, args.model_weights)
     face_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     face_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+    #
+    # body_net = cv2.dnn.readNetFromDarknet(FULL_CFG_PATH, FULL_WEIGHTS_PATH)
+    # body_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    # body_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-    body_net = cv2.dnn.readNetFromDarknet(FULL_CFG_PATH, FULL_WEIGHTS_PATH)
-    body_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    body_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+    # print("net loading time: {}".format(time.time() - net_load))
 
-    print("net loading time: {}".format(time.time() - net_load))
-
-    return face_net, body_net, args
+    return face_net, args
 
 
 def get_cap_and_output(args):
@@ -93,7 +93,7 @@ def get_cap_and_output(args):
                 "[!] ==> Input video file {} doesn't exist".format(args.video))
             sys.exit(1)
         cap = cv2.VideoCapture(args.video)
-        output_file = args.video[:-4].rsplit('/')[-1] + '_yoloface.avi'
+        output_file = args.video[:-4].rsplit('/')[-1] + '_yoloface_5000.avi'
     else:
         # Get data from the camera
         cap = cv2.VideoCapture(args.src)
@@ -116,7 +116,7 @@ def handle_unmatched_faces_and_bodies(faces_list, bodies_list):
             child_in_frame_counter += 1
         else:
             adult_in_frame_counter += 1
-        print("Body Head Ratio: {}".format(ratio))
+        # print("Body Head Ratio: {}".format(ratio))
     return child_in_frame_counter, adult_in_frame_counter
 
 
@@ -137,13 +137,12 @@ def analyze_objects_in_frame(faces_list, bodies_list):
         # continue
     else:
         for i in range(len(faces_list)):
-            ratio = (bodies_list[i][0] + HEAD_PERCENTAGE * faces_list[i][0]) / \
-                    faces_list[i][0]
+            ratio = bodies_list[i][0] / faces_list[i][0]
             if ratio <= ADULT_CHILD_RATIO:
                 child_in_frame_counter += 1
             else:
                 adult_in_frame_counter += 1
-            print("Body Head Ratio: {}".format(ratio))
+            # print("Body Head Ratio: {}".format(ratio))
     if child_in_frame_counter >= 1 and adult_in_frame_counter == 0:
         alarm_flag = True
     return identify_flag, alarm_flag
@@ -152,7 +151,7 @@ def analyze_objects_in_frame(faces_list, bodies_list):
 def _main():
     wind_name = 'face detection using YOLOv3'
     cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
-    face_net, body_net, args = load_args_and_model()
+    face_net, args = load_args_and_model()
     cap, output_file = get_cap_and_output(args)
     child_in_zone = 0
 
@@ -184,19 +183,19 @@ def _main():
 
         # Sets the input to the network
         face_net.setInput(blob)
-        body_net.setInput(blob)
+        # body_net.setInput(blob)
 
         # Runs the forward pass to get output of the output layers
         forward_time = time.time()
         face_outs = face_net.forward(get_outputs_names(face_net))
-        body_outs = body_net.forward(get_outputs_names(body_net))
-        print("forwarding time: {}".format(time.time() - forward_time))
+        # body_outs = body_net.forward(get_outputs_names(body_net))
+        # print("forwarding time: {}".format(time.time() - forward_time))
         # Remove the bounding boxes with low confidence and returns lists
         # with the bodies and faces in the frame
         post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD,
                      True, faces_list, bodies_list)
-        post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
-                     False, faces_list, bodies_list)
+        # post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
+        #              False, faces_list, bodies_list)
 
         # sort the faces and bodies to find matches
         faces_list.sort(key=lambda x: x[1])
@@ -207,13 +206,14 @@ def _main():
 
         if not alarm_flag:
             child_in_zone = 0
-        elif child_in_zone == 9:
-            print("ALARMMMMMM")  # NEED TO BE HELI
+        elif child_in_zone == 2:
+            # print("ALARMMMMMM")  # NEED TO BE HELI
             child_in_zone = 0
         else:
             # this is the hotzone section - if we entered this else it means
             # that we only have children in the frame. need to go over the
             # bodies list and check if the center is in the hotzone
+            child_in_zone += 1
             for body in bodies_list:
                 if (body[2][0], body[2][1]) in []:  # change the empty list
                     child_in_zone += 1
@@ -232,7 +232,7 @@ def _main():
             print('[i] ==> Interrupted by user!')
             break
         end = time.time()
-        print("Time for round: {}".format(end - start))
+        # print("Time for round: {}".format(end - start))
 
     cap.release()
     cv2.destroyAllWindows()
