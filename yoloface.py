@@ -185,7 +185,7 @@ def _main(info, pool_coords):
 
         if not alarm_flag:
             child_in_zone = 0
-        elif child_in_zone == 1:
+        elif child_in_zone >= 1:
             print("ALARMMMMMM")  # NEED TO BE HELI
             switch_alarm()
             # TODO: Add borders check
@@ -195,11 +195,11 @@ def _main(info, pool_coords):
             # this is the hotzone section - if we entered this else it means
             # that we only have children in the frame. need to go over the
             # bodies list and check if the center is in the hotzone
+            
             for body in bodies_list:
-                if (check_borders(body[2][0], 720 - body[2][1], pool_coords)):
-                    if (body[2][0], body[2][1]):  # change the empty list
-                        child_in_zone += 1
-                        break
+                # if (check_borders(body[2][0], 720 - body[2][1], pool_coords)):
+                child_in_zone += 1
+                break
 
         # Save the output video to file
         if args.image:
@@ -222,6 +222,7 @@ def _main(info, pool_coords):
                 off_req = x.val()
             if off_req == f"{PASSWORD} true":
             # TODO: Release camrea resources
+                cap.release()
                 exit(1)
             #if the request is a number, turn off for this amount of minutes
             elif off_req.isnumeric():

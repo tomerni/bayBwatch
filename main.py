@@ -36,17 +36,19 @@ def main():
         # wait for a password
         while not info.get().each():
             continue
-        print("I reached here")
+        print("Looking for coords")
         password = ""
         for x in info.get().each():
             password = x.val()
             print(password)
         while password != PASSWORD:
+            print("Wrong password, waiting to get the right one")
             # Maybe send somehow a message that the password is wrong
             for x in info.get().each():
                 password = x.val()
-        pool_coords = process_pool_img(storage, info)
-    
+        print("Password is correct")
+        process_pool_img(storage, info)
+    pool_coords = retrieve_coords()
     info.remove()
     camera.close()
     _main(info, pool_coords) #storage, info, pool_coords
@@ -55,7 +57,7 @@ def main():
 def process_pool_img(storage, info):
     take_picture()
     storage.child("images/pool_image.jpg").put("pool_image.jpg")
-    print("uploaded to storage")
+    print("Image is uploaded to storage")
     response = ""
     for x in info.get().each():
         response = x.val()
@@ -71,8 +73,7 @@ def process_pool_img(storage, info):
     borders = ""
     for x in info.get().each():
         borders = x.val()
-    pool_coords = string_to_poly(borders) # TODO: Same as above
-    return pool_coords
+    string_to_poly(borders) # TODO: Same as above
 
 
 def take_picture():
@@ -83,36 +84,25 @@ def take_picture():
     print("took picture")
 
 
-def string_to_poly(coords_string):
+def string_to_poly(coords_string):# "0.11, 0.33, 0.6456, 0.555, 1, 0.222, 0,7, 0"
     f = open("coords", "w")
-    for coord in coords_string:
-        if coord != ",":
-            f.write(coord + "\n")
+    for coord in coords_string.split(","):
+        f.write(coord + "\n")
     f.close()
+
+
+def retrieve_coords():
     f = open("coords", "r")
     lines = f.readlines()
     hz = []
     for line in lines:
-        hz.append(line)
+        hz.append(line[:-1]) # TODO: Check if removing \n is really needed
     i = 0
     hz_tuples =[]
     while(i < 7):
-        hz_tuples.append((hz[i][:-1], hz[i+1][:-1]))
+        hz_tuples.append((hz[i], hz[i+1]))
         i += 2
-    sort_hot_zone_coords(hz_tuples)
-    pool_coords = [(hz[0], hz[1]), (hz[2], hz[3]), (hz[4], hz[5]),
-                   (hz[6], hz[7])]
-    return pool_coords
-
-
-def sort_hot_zone_coords(hot_zone_coords):
-    # TODO: Write sorting function
-    return hot_zone_coords
-
-
-def check_borders(x, y):
-    #return pool_coords
-    return True
+    return hz_tuples
 
 
 if __name__ == '__main__':
