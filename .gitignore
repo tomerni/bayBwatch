@@ -131,5 +131,6 @@ dmypy.json
 /model-weights/yolov3-wider_16000.weights
 /model-weights/yolov3-spp.weights
 /model-weights/yolov3-tiny-obj_last.weights
+/model-weights/yolov4-tiny-crowdhuman-416x416_best.weights
 /outputs/
 /outputs/

@@ -39,10 +39,10 @@ HEAD_PERCENTAGE = 0.75
 def load_args_and_model():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-cfg', type=str,
-                        default='./cfg/yolov3-tiny-obj.cfg',
+                        default='./cfg/yolov4-tiny.cfg',
                         help='path to config file')
     parser.add_argument('--model-weights', type=str,
-                        default='./model-weights/yolov3-tiny-obj_last.weights',
+                        default='./model-weights/yolov4-tiny-crowdhuman-416x416_best.weights',
                         help='path to weights of model')
     parser.add_argument('--image', type=str, default='',
                         help='path to image file')
@@ -68,11 +68,11 @@ def load_args_and_model():
     face_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     face_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-    body_net = cv2.dnn.readNetFromDarknet("cfg/yolov3-tiny.cfg", "model-weights/yolov3-tiny.weights")
-    body_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-    body_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+    #body_net = cv2.dnn.readNetFromDarknet("cfg/yolov3-tiny.cfg", "model-weights/yolov3-tiny.weights")
+    #body_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+    #body_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
-    return face_net, body_net, args
+    return face_net, args
 
 
 def get_cap_and_output(args):
@@ -98,15 +98,37 @@ def get_cap_and_output(args):
     return cap, output_file
 
 
+
+def handle_unmatched_faces_and_bodies(faces_list, bodies_list):
+    matched_bodies_faces = list()
+    child_in_frame_counter, adult_in_frame_counter = 0, 0
+    for face in faces_list:
+        for body in bodies_list:
+            if abs(face[1] - body[1][0]) <= 20:
+                matched_bodies_faces.append((face, body))
+    for pair in matched_bodies_faces:
+        ratio = (pair[1][0] + HEAD_PERCENTAGE * pair[0][0]) / \
+                pair[0][0]
+        if ratio <= ADULT_CHILD_RATIO:
+            child_in_frame_counter += 1
+        else:
+            adult_in_frame_counter += 1
+        # print("Body Head Ratio: {}".format(ratio))
+    return child_in_frame_counter, adult_in_frame_counter
+
+
 def analyze_objects_in_frame(faces_list, bodies_list):
     adult_in_frame_counter, child_in_frame_counter = 0, 0
     identify_flag, alarm_flag = False, False
     # any match
     if len(faces_list) > 0 and len(bodies_list) > 0:
         identify_flag = True
+    else:
+        return False, False
     # incompatible number of heads and bodies
     if len(faces_list) != len(bodies_list):
-        print("Balagan")
+        child_in_frame_counter, adult_in_frame_counter = \
+            handle_unmatched_faces_and_bodies(faces_list, bodies_list)
         # continue
     else:
         for i in range(len(faces_list)):
@@ -129,7 +151,7 @@ def check_borders(x,y, hz):
 def _main(info, pool_coords):
     wind_name = 'face detection using YOLOv3'
     cv2.namedWindow(wind_name, cv2.WINDOW_NORMAL)
-    face_net, body_net, args = load_args_and_model()
+    face_net, args = load_args_and_model()
     cap = cv2.VideoCapture(0)
     output_file = ''
     child_in_zone = 0
@@ -147,7 +169,6 @@ def _main(info, pool_coords):
         start = time.time()
         has_frame, frame = cap.read()
         faces_list, bodies_list = list(), list()
-        hot_zones_list = [HotZone(100, 100, 200, 200, 2)]
 
         # Stop the program if reached end of video
         if not has_frame:
@@ -163,18 +184,18 @@ def _main(info, pool_coords):
 
         # Sets the input to the network
         face_net.setInput(blob)
-        body_net.setInput(blob)
+        #body_net.setInput(blob)
 
         # Runs the forward pass to get output of the output layers
         face_outs = face_net.forward(get_outputs_names(face_net))
-        body_outs = body_net.forward(get_outputs_names(body_net))
+        #body_outs = body_net.forward(get_outputs_names(body_net))
 
         # Remove the bounding boxes with low confidence and returns lists
         # with the bodies and faces in the frame
         post_process(frame, face_outs, CONF_THRESHOLD, NMS_THRESHOLD,
-                     True, faces_list, bodies_list, hot_zones_list)
-        post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
-                     False, faces_list, bodies_list, hot_zones_list)
+                     True, faces_list, bodies_list)
+        #post_process(frame, body_outs, CONF_THRESHOLD, NMS_THRESHOLD,
+         #            False, faces_list, bodies_list, hot_zones_list)
 
         # sort the faces and bodies to find matches
         faces_list.sort(key=lambda x: x[1])
@@ -234,6 +255,6 @@ def _main(info, pool_coords):
     print('==> All done!')
     print('***********************************************************')
 
-
+#updated
 if __name__ == '__main__':
    print(_main())
