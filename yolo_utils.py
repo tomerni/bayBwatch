@@ -11,7 +11,7 @@
 # This file contains the code of the parameters and help functions
 #
 # *******************************************************************
-
+#pi
 
 import datetime
 import numpy as np
@@ -25,8 +25,8 @@ from hotzone import HotZone
 
 CONF_THRESHOLD = 0.5
 NMS_THRESHOLD = 0.43
-IMG_WIDTH = 320
-IMG_HEIGHT = 320
+IMG_WIDTH = 416
+IMG_HEIGHT = 416
 
 # Default colors
 COLOR_BLUE = (255, 0, 0)
@@ -54,7 +54,6 @@ def get_outputs_names(net):
 def draw_predict(frame, conf, left, top, right, bottom, head_body_flag, faces_list,
                  bodies_list, center_x, center_y, class_id):
     # Draw a bounding box.
-    print("drawing rectangle")
     cv2.rectangle(frame, (left, top), (right, bottom), COLOR_YELLOW, 2)
 
     if class_id == 0:
@@ -102,7 +101,6 @@ def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
             # confidence above the threshold and class_id = 0 i.e. person
             # according to the coco.names and face
             if confidence >= conf_threshold:
-                print("after if")
                 center_x = int(detection[0] * frame_width)
                 center_y = int(detection[1] * frame_height)
                 width = int(detection[2] * frame_width)
