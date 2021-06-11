@@ -101,7 +101,6 @@ def post_process(frame, outs, conf_threshold, nms_threshold, is_head_flag,
             confidence = scores[class_id]
             # confidence above the threshold and class_id = 0 i.e. person
             # according to the coco.names and face
-            print("before if:" + str(confidence))
             if confidence >= conf_threshold:
                 print("after if")
                 center_x = int(detection[0] * frame_width)

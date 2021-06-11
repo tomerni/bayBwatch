@@ -39,10 +39,10 @@ HEAD_PERCENTAGE = 0.75
 def load_args_and_model():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-cfg', type=str,
-                        default='./cfg/yolov4-tiny.cfg',
+                        default='./cfg/yolov3-tiny-crowdhuman.cfg',
                         help='path to config file')
     parser.add_argument('--model-weights', type=str,
-                        default='./model-weights/yolov4-tiny-crowdhuman-416x416_best.weights',
+                        default='./model-weights/yolov3-tiny-crowdhuman_best.weights',
                         help='path to weights of model')
     parser.add_argument('--image', type=str, default='',
                         help='path to image file')
@@ -64,7 +64,7 @@ def load_args_and_model():
 
     # Give the configuration and weight files for the model and load the network
     # using them.
-    face_net = cv2.dnn.readNetFromDarknet(args.model_cfg, args.model_weights)
+    face_net = cv2.dnn.readNet(args.model_weights, args.model_cfg)
     face_net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     face_net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
@@ -154,6 +154,7 @@ def _main(info, pool_coords):
     face_net, args = load_args_and_model()
     cap = cv2.VideoCapture(0)
     output_file = ''
+    # cap, output_file = get_cap_and_output(args)
     child_in_zone = 0
 
     # Get the video writer initialized to save the output video
@@ -241,13 +242,13 @@ def _main(info, pool_coords):
         if info.get().each():
             for x in info.get().each():
                 off_req = x.val()
-            if off_req == f"{PASSWORD} true":
+            #if off_req == f"{PASSWORD} true":
             # TODO: Release camrea resources
-                cap.release()
-                exit(1)
+                #cap.release()
+                #exit(1)
             #if the request is a number, turn off for this amount of minutes
-            elif off_req.isnumeric():
-                time.sleep(int(off_req[len(PASSWORD) + 1:]) * 60)
+            #elif off_req.isnumeric():
+                #time.sleep(int(off_req[len(PASSWORD) + 1:]) * 60)
 
     cap.release()
     cv2.destroyAllWindows()
