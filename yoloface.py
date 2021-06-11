@@ -38,10 +38,10 @@ HEAD_PERCENTAGE = 0.75
 def load_args_and_model():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-cfg', type=str,
-                        default='./cfg/yolov4-tiny.cfg',
+                        default='./cfg/yolov3-tiny-crowdhuman.cfg',
                         help='path to config file')
     parser.add_argument('--model-weights', type=str,
-                        default='./model-weights/yolov4-tiny-crowdhuman-416x416_5000.weights',
+                        default='./model-weights/yolov3-tiny-crowdhuman_best.weights',
                         help='path to weights of model')
     parser.add_argument('--image', type=str, default='',
                         help='path to image file')
